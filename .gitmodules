@@ -1,3 +1,6 @@
 [submodule "arithmetic/CMSIS-DSP"]
 	path = arithmetic/CMSIS-DSP
 	url = https://github.com/ARM-software/CMSIS-DSP.git
+[submodule "SEGGER"]
+	path = SEGGER
+	url = https://github.com/SEGGERMicro/RTT.git
