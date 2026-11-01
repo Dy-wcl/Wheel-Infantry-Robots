@@ -12,7 +12,7 @@
 #include "comp_utils.h"
 #include "dj_motor_ctrl.h"
 #include "dr16.h"
-#include "pid_incremental.h"
+#include "pid_location.h"
 
 /* DR16 task owns the decoded command and updates it periodically. */
 extern DR16_t *dr16;
@@ -23,10 +23,10 @@ static dj_motor_t shoot_motors[3];
 static err_t shoot_bus_init_result;
 static err_t shoot_init_result[3];
 /* 速度环 PID 实例：三台电机各一个 */
-static PIDInstance_jie pid_speed[3];
+static PIDInstance pid_speed[3];
 static err_t pid_init_result[3];
 /* 位置环 PID 实例：仅拨弹电机 M2006 需要位置环 */
-static PIDInstance_jie pid_location;
+static PIDInstance pid_location;
 static pid_device_t shoot_pid_devices[3];
 
 /**
@@ -88,37 +88,37 @@ err_t shoot_control_init(void) {
 
 void shoot_speed_pid_init(void) {
   // 初始化左摩擦轮电机速度 PID 参数（M3508 单速度环）
-  PID_Init_Params_jie(
-      &pid_speed[0], 10.0f, 0.0f, 0.0f, 0.0002f, 12000.0f, 3000.0f, 0.0f,
-      PID_INC_INTEGRAL_LIMIT | PID_INC_DERIVATIVE_ON_MEASUREMENT |
-          PID_INC_OUTPUT_FILTER | PID_INC_DERIVATIVE_FILTER);
+  PIDInit(&pid_speed[0], 10.0f, 0.0f, 0.0f, 12000.0f, 3000.0f, 0.0f,
+          PID_Integral_Limit | PID_Derivative_On_Measurement |
+              PID_OutputFilter | PID_DerivativeFilter,
+          0.0f, 0.0f, 0.05f, 0.1f);
   // 初始化右摩擦轮电机速度 PID 参数（M3508 单速度环）
-  PID_Init_Params_jie(
-      &pid_speed[1], 10.0f, 0.0f, 0.0f, 0.0002f, 12000.0f, 3000.0f, 0.0f,
-      PID_INC_INTEGRAL_LIMIT | PID_INC_DERIVATIVE_ON_MEASUREMENT |
-          PID_INC_OUTPUT_FILTER | PID_INC_DERIVATIVE_FILTER);
+  PIDInit(&pid_speed[1], 10.0f, 0.0f, 0.0f, 12000.0f, 3000.0f, 0.0f,
+          PID_Integral_Limit | PID_Derivative_On_Measurement |
+              PID_OutputFilter | PID_DerivativeFilter,
+          0.0f, 0.0f, 0.05f, 0.1f);
   // 初始化拨弹电机速度环 PID 参数（M2006 双环内环，输出电流限幅 10000）
-  PID_Init_Params_jie(
-      &pid_speed[2], 8.0f, 0.0f, 0.0f, 0.0002f, 10000.0f, 3000.0f, 0.0f,
-      PID_INC_INTEGRAL_LIMIT | PID_INC_DERIVATIVE_ON_MEASUREMENT |
-          PID_INC_OUTPUT_FILTER | PID_INC_DERIVATIVE_FILTER);
+  PIDInit(&pid_speed[2], 8.0f, 0.0f, 0.0f, 10000.0f, 3000.0f, 0.0f,
+          PID_Integral_Limit | PID_Derivative_On_Measurement |
+              PID_OutputFilter | PID_DerivativeFilter,
+          0.0f, 0.0f, 0.05f, 0.1f);
   // 初始化拨弹电机位置环 PID（仅 M2006 需要位置环，输出为目标速度）
-  PID_Init_Params_jie(
-      &pid_location, 8.0f, 0.0f, 0.0f, 0.0002f, 3000.0f, 1000.0f, 0.0f,
-      PID_INC_INTEGRAL_LIMIT | PID_INC_DERIVATIVE_ON_MEASUREMENT |
-          PID_INC_OUTPUT_FILTER | PID_INC_DERIVATIVE_FILTER);
+  PIDInit(&pid_location, 8.0f, 0.0f, 0.0f, 3000.0f, 1000.0f, 0.0f,
+          PID_Integral_Limit | PID_Derivative_On_Measurement |
+              PID_OutputFilter | PID_DerivativeFilter,
+          0.0f, 0.0f, 0.05f, 0.1f);
 
   pid_init_result[0] =
       pid_device_init(&shoot_pid_devices[0], &shoot_motors[0],
-                      PID_DEVICE_INCREMENTAL, &pid_speed[0], NULL);
+                      PID_DEVICE_POSITIONAL, &pid_speed[0], NULL);
   VERIFY(pid_init_result[0] == OK);
   pid_init_result[1] =
       pid_device_init(&shoot_pid_devices[1], &shoot_motors[1],
-                      PID_DEVICE_INCREMENTAL, &pid_speed[1], NULL);
+                      PID_DEVICE_POSITIONAL, &pid_speed[1], NULL);
   VERIFY(pid_init_result[1] == OK);
   pid_init_result[2] =
       pid_device_init(&shoot_pid_devices[2], &shoot_motors[2],
-                      PID_DEVICE_INCREMENTAL, &pid_speed[2], &pid_location);
+                      PID_DEVICE_POSITIONAL, &pid_speed[2], &pid_location);
   VERIFY(pid_init_result[2] == OK);
 }
 

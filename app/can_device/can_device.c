@@ -93,7 +93,7 @@ err_t CAN_RegisterAllDevices(void) {
  * 供 IMU 任务访问已注册的设备对象，无需暴露全局变量。
  * @return IMU 对象指针，若未初始化可能返回未就绪的对象。
  */
-IMUCAN_t *can_device_get_imu(void) { return &imu_can_instance; }
+IMUCAN_t* can_device_get_imu(void) { return &imu_can_instance; }
 
 /**
  * @brief 启动全部 CAN 总线。

@@ -82,7 +82,7 @@ err_t pid_device_control_speed(pid_device_t* device, float target_rpm,
                                          (float)feedback.speed_rpm);
   return pid_device_write_command(device, output, feedforward);
 }
-
+dj_motor_feedback_t feedback_jie = {};
 /**
  * 执行位置串级控制：位置环生成目标 RPM，速度环生成电机命令。
  * is_optimize 为 true 时使用 ±180° 最短路径，否则直接使用角度反馈。
@@ -94,6 +94,11 @@ err_t pid_device_control_location(pid_device_t* device, float target_deg,
   dj_motor_feedback_t feedback;
   const err_t result = pid_device_feedback(device, &feedback);
   if (result != OK) return result;
+
+  /* 先由驱动填充完整快照，再复制给调试观察变量。此前这里复制的是
+   * 未初始化的局部变量，导致温度、角度、valid 和 tick 都可能是随机值。 */
+  feedback_jie = feedback;
+
   if ((device->location_pid == NULL) || !feedback.valid) return STATE_ERR;
   if (!isfinite(feedback.position_deg)) return ARG_ERR;
 

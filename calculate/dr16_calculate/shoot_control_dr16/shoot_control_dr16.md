@@ -1,6 +1,6 @@
 # shoot_control_dr16
 
-发射机构控制模块(DR16 遥控器).管理 CAN1 上的 2 台 M3508 摩擦轮 + 1 台 M2006 拨弹电机,使用增量式 PID;摩擦轮单速度环,拨弹电机速度位置双环.遥控数据来自全局 `dr16` 对象.
+发射机构控制模块(DR16 遥控器).管理 CAN1 上的 2 台 M3508 摩擦轮 + 1 台 M2006 拨弹电机,使用位置式 PID;摩擦轮单速度环,拨弹电机速度位置双环.遥控数据来自全局 `dr16` 对象.
 
 ## 电机配置
 
@@ -28,7 +28,9 @@
 
 ## PID 参数
 
-各环均启用 `PID_INC_INTEGRAL_LIMIT | PID_INC_DERIVATIVE_ON_MEASUREMENT | PID_INC_OUTPUT_FILTER | PID_INC_DERIVATIVE_FILTER`:
+各环使用 `PIDInstance` / `PIDInit()`，通过 `PID_DEVICE_POSITIONAL` 绑定公共设备；均启用 `PID_Integral_Limit | PID_Derivative_On_Measurement | PID_OutputFilter | PID_DerivativeFilter`。
+
+保留原参数：`Ki = Kd = 0`、死区为 0；输出滤波时间常数为 0.05 s，微分滤波时间常数为 0.1 s。速度环积分限幅为 3000，位置环为 1000。采样间隔由 DWT 实测。位置式每轮计算绝对输出，切换算法后动态响应需要实机确认。
 
 | 电机 | 环 | Kp | MaxOut |
 | --- | --- | --- | --- |
