@@ -41,6 +41,14 @@ typedef struct __attribute__((packed)) {
   uint16_t res;          //! 保留通道
 } dr16_data_t;
 
+#if defined(__cplusplus)
+static_assert(sizeof(dr16_data_t) == DR16_FRAME_SIZE,
+              "DR16 raw layout must remain 18 bytes");
+#else
+_Static_assert(sizeof(dr16_data_t) == DR16_FRAME_SIZE,
+               "DR16 raw layout must remain 18 bytes");
+#endif
+
 //! DR16 遥控器对象。
 //! RX 使用 UART DMA 接收完整 18 字节帧，任务上下文解析为归一化 cmd_rc_t。
 typedef struct {
