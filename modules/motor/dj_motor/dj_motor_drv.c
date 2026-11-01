@@ -170,8 +170,14 @@ err_t dj_motor_drv_decode_feedback(const uint8_t data[8],
     return PTR_NULL;
   }
 
-  /* 帧布局：enc[0:1] rpm[2:3] cur[4:5] temp[6]，[7] 保留 */
-  feedback->encoder = dj_motor_drv_read_u16_be(&data[0]);
+  /* 帧布局：enc[0:1] rpm[2:3] cur[4:5] temp[6]，[7] 保留。
+   * 编码器是 13 位单圈值；拒绝高位异常帧，避免位置换算得到
+   * 大于 360° 的假反馈。 */
+  const uint16_t encoder = dj_motor_drv_read_u16_be(&data[0]);
+  if (encoder >= DJ_MOTOR_ENCODER_RESOLUTION) {
+    return OUT_OF_RANGE;
+  }
+  feedback->encoder = encoder;
   feedback->speed_rpm = (int16_t)dj_motor_drv_read_u16_be(&data[2]);
   feedback->current = (int16_t)dj_motor_drv_read_u16_be(&data[4]);
   feedback->temperature = data[6];
