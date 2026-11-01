@@ -15,7 +15,7 @@
 #include "pid_incremental.h"
 
 /* DR16 task owns the decoded command and updates it periodically. */
-extern DR16_t* dr16;
+extern DR16_t *dr16;
 
 /* 发射机构电机总线与实例 */
 static dj_motor_bus_t shoot_bus;
@@ -43,7 +43,7 @@ err_t shoot_control_init(void) {
     return NOT_FOUND;
   }
 
-  STM32CAN_t* can1 = STM32CAN_GetInstance(can_id);
+  STM32CAN_t *can1 = STM32CAN_GetInstance(can_id);
   ASSERT(can1 != NULL);
   if (can1 == NULL) {
     return PTR_NULL;
@@ -63,22 +63,25 @@ err_t shoot_control_init(void) {
    *   拨弹电机 = 3 号电机（M2006，速度位置双环）
    * reversed 参数根据实际机械安装方向设置 */
   shoot_init_result[0] =
-      dj_motor_init(&shoot_motors[0], &shoot_bus, DJ_MOTOR_M3508, 1,
+      dj_motor_init(&shoot_motors[0], &shoot_bus, DJ_MOTOR_M3508, 7,
                     false); /* 左摩擦轮 = 1 号 */
   VERIFY(shoot_init_result[0] == OK);
-  if (shoot_init_result[0] != OK) return shoot_init_result[0];
+  if (shoot_init_result[0] != OK)
+    return shoot_init_result[0];
 
   shoot_init_result[1] =
-      dj_motor_init(&shoot_motors[1], &shoot_bus, DJ_MOTOR_M3508, 2,
+      dj_motor_init(&shoot_motors[1], &shoot_bus, DJ_MOTOR_M3508, 8,
                     false); /* 右摩擦轮 = 2 号 */
   VERIFY(shoot_init_result[1] == OK);
-  if (shoot_init_result[1] != OK) return shoot_init_result[1];
+  if (shoot_init_result[1] != OK)
+    return shoot_init_result[1];
 
   shoot_init_result[2] =
       dj_motor_init(&shoot_motors[2], &shoot_bus, DJ_MOTOR_M2006, 3,
                     false); /* 拨弹电机 = 3 号 */
   VERIFY(shoot_init_result[2] == OK);
-  if (shoot_init_result[2] != OK) return shoot_init_result[2];
+  if (shoot_init_result[2] != OK)
+    return shoot_init_result[2];
 
   return OK;
 }
@@ -126,7 +129,8 @@ void shoot_speed_pid_init(void) {
 static void shoot_stop(void) {
   /* 发射机构所有电机（ID 1-3）都在 0x200 控制组，只需清空该组 */
   /* CAN_RegisterAllDevices 当前尚未注册发射机构，未初始化时保持安全空操作。 */
-  if (!shoot_bus.initialized) return;
+  if (!shoot_bus.initialized)
+    return;
   VERIFY(dj_motor_zero_and_flush(&shoot_bus, DJ_MOTOR_GROUP_200) == OK);
 }
 
@@ -169,10 +173,8 @@ static void shoot_single_mode(void) {
     const err_t feedback_result =
         dj_motor_get_feedback(&shoot_motors[2], &feedback);
     VERIFY(feedback_result == OK);
-    if (feedback_result != OK ||
-        !feedback.valid) {
-      VERIFY(pid_device_control_speed(&shoot_pid_devices[2], 0.0f, 0.0f) ==
-             OK);
+    if (feedback_result != OK || !feedback.valid) {
+      VERIFY(pid_device_control_speed(&shoot_pid_devices[2], 0.0f, 0.0f) == OK);
       return;
     }
     ASSERT(isfinite(feedback.position_deg));
@@ -193,8 +195,7 @@ static void shoot_single_mode(void) {
   const err_t feedback_result =
       dj_motor_get_feedback(&shoot_motors[2], &feedback);
   VERIFY(feedback_result == OK);
-  if (feedback_result != OK ||
-      !feedback.valid) {
+  if (feedback_result != OK || !feedback.valid) {
     VERIFY(pid_device_control_speed(&shoot_pid_devices[2], 0.0f, 0.0f) == OK);
     return;
   }
