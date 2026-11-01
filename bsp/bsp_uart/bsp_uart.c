@@ -253,9 +253,12 @@ void STM32UART_HandleRxData(STM32UART_t* self, uint8_t* data, size_t size) {
 }
 
 //! 单缓冲 RX 事件处理入口。
-//! 根据 DMA 剩余计数计算当前写入位置，并把 last_rx_pos_ 到 curr_pos
-//! 的增量切片回调。 环形缓冲回绕时会拆成尾部和头部两段分别回调。
-static void STM32_UART_RX_ISR_Handler(UART_HandleTypeDef* uart_handle) {
+//! 使用 HAL 传入的写入位置（size），把 last_rx_pos_ 到 curr_pos
+//! 的增量切片回调。环形缓冲回绕时会拆成尾部和头部两段分别回调。
+//! last_rx_pos_ == dma_size 表示刚处理过一次 DMA 完成事件，避免同一
+//! 次完成事件随后触发 IDLE 时重复消费整块缓冲。
+static void STM32_UART_RX_ISR_Handler(UART_HandleTypeDef* uart_handle,
+                                      uint16_t size) {
   ASSERT(uart_handle != NULL);
   if (uart_handle == NULL) {
     return;
@@ -273,12 +276,6 @@ static void STM32_UART_RX_ISR_Handler(UART_HandleTypeDef* uart_handle) {
     return;
   }
 
-  ASSERT(uart_handle->hdmarx != NULL);
-  if (uart_handle->hdmarx == NULL) {
-    uart->last_error_ = PTR_NULL;
-    return;
-  }
-
   uint8_t* rx_buf = (uint8_t*)uart->dma_buff_rx_.addr_;
   const size_t dma_size = uart->dma_buff_rx_.size_;
   ASSERT(rx_buf != NULL);
@@ -293,39 +290,63 @@ static void STM32_UART_RX_ISR_Handler(UART_HandleTypeDef* uart_handle) {
     return;
   }
 
-  const size_t dma_remaining =
-      (size_t)__HAL_DMA_GET_COUNTER(uart_handle->hdmarx);
-  ASSERT(dma_remaining <= dma_size);
-  if (dma_remaining > dma_size) {
+  const size_t curr_pos = (size_t)size;
+  ASSERT(curr_pos <= dma_size);
+  if (curr_pos > dma_size) {
     uart->last_error_ = OUT_OF_RANGE;
     return;
   }
 
-  const size_t curr_pos = dma_size - dma_remaining;
-  const size_t last_pos = uart->last_rx_pos_;
+  size_t last_pos = uart->last_rx_pos_;
   ASSERT(last_pos <= dma_size);
   if (last_pos > dma_size) {
     uart->last_error_ = OUT_OF_RANGE;
-    uart->last_rx_pos_ = curr_pos;
+    uart->last_rx_pos_ = 0U;
+    last_pos = 0U;
+  }
+
+  /* DMA TC reports position dma_size. A repeated IDLE report at the same
+   * position contains no new bytes and must not be delivered twice. */
+  if ((curr_pos == dma_size) && (last_pos == dma_size)) {
     return;
   }
 
-  if (curr_pos != last_pos) {
-    if (curr_pos > last_pos) {
-      const size_t data_size = curr_pos - last_pos;
-      STM32UART_HandleRxData(uart, rx_buf + last_pos, data_size);
-    } else {
-      const size_t first_part_size = dma_size - last_pos;
-      STM32UART_HandleRxData(uart, rx_buf + last_pos, first_part_size);
+  if (curr_pos == dma_size) {
+    if (last_pos < dma_size) {
+      const size_t data_size = dma_size - last_pos;
+      if (data_size > 0U) {
+        STM32UART_HandleRxData(uart, rx_buf + last_pos, data_size);
+      }
+    }
+    uart->last_rx_pos_ = dma_size;
+    return;
+  }
 
-      if (curr_pos > 0U) {
-        const size_t second_part_size = curr_pos;
+  /* The first event after TC starts at offset zero. */
+  if (last_pos == dma_size) {
+    last_pos = 0U;
+  }
+
+  if (curr_pos > last_pos) {
+    const size_t data_size = curr_pos - last_pos;
+    if (data_size > 0U) {
+      STM32UART_HandleRxData(uart, rx_buf + last_pos, data_size);
+    }
+  } else if (curr_pos < last_pos) {
+    const size_t first_part_size = dma_size - last_pos;
+    if (first_part_size > 0U) {
+      STM32UART_HandleRxData(uart, rx_buf + last_pos, first_part_size);
+    }
+
+    if (curr_pos > 0U) {
+      const size_t second_part_size = curr_pos;
+      if (second_part_size > 0U) {
         STM32UART_HandleRxData(uart, rx_buf, second_part_size);
       }
     }
-
-    uart->last_rx_pos_ = curr_pos;
   }
+
+  uart->last_rx_pos_ = curr_pos;
 }
 
 // ==================== 变长帧 DMA TX ====================
@@ -909,10 +930,9 @@ void STM32UARTDoubleBufTx_HandleTxComplete(STM32UARTDoubleBufTx_t* self) {
 // ==================== HAL 回调分发 ====================
 
 //! HAL Receive-To-Idle 事件回调。
-//! HAL 只提供 UART 句柄和本轮 size；这里反查 BSP 对象后按 DMA 计数器切片。
+//! size 是 HAL 在 IDLE/半传输/全传输事件采样到的 DMA 写入位置；
+//! 直接使用它，避免回调执行期间 DMA 已继续写入导致位置漂移。
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef* huart, uint16_t size) {
-  RM_UNUSED(size);
-
   if (huart == NULL) {
     return;
   }
@@ -923,7 +943,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef* huart, uint16_t size) {
   }
 
   if (stm32_uart_map[id] != NULL) {
-    STM32_UART_RX_ISR_Handler(huart);
+    STM32_UART_RX_ISR_Handler(huart, size);
   }
 }
 
