@@ -120,7 +120,7 @@ int BSPLogPrintfTerminal(unsigned char terminal_id, const char *type,
   BaseType_t lock_required;
   va_list args;
 
-  if ((line_mutex == NULL) || (__get_IPSR() != 0U) || (512 <= suffix_size)) {
+  if ((line_mutex == NULL) || (__get_IPSR() != 0U) || (suffix_size >= 512)) {
     return -1;
   }
 
