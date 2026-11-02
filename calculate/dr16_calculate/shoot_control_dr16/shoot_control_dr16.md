@@ -30,7 +30,7 @@
 
 各环使用 `PIDInstance` / `PIDInit()`，通过 `PID_DEVICE_POSITIONAL` 绑定公共设备；均启用 `PID_Integral_Limit | PID_Derivative_On_Measurement | PID_OutputFilter | PID_DerivativeFilter`。
 
-保留原参数：`Ki = Kd = 0`、死区为 0；输出滤波时间常数为 0.05 s，微分滤波时间常数为 0.1 s。速度环积分限幅为 3000，位置环为 1000。采样间隔由 DWT 实测。位置式每轮计算绝对输出，切换算法后动态响应需要实机确认。
+各环 `Ki = Kd = 0`、死区为 0；输出滤波和微分滤波时间常数均为 0.0015 s（1.5 ms）。速度环积分限幅为 3000，位置环为 1000。采样间隔由 DWT 实测。位置式每轮计算绝对输出，切换算法后动态响应需要实机确认。
 
 | 电机 | 环 | Kp | MaxOut |
 | --- | --- | --- | --- |

@@ -42,6 +42,17 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
+/* Fault snapshot for post-mortem inspection with J-Link/GDB. Do not print
+ * from a fault handler: RTT/printf can use the same corrupted stack. */
+volatile uint32_t hardfault_exc_return;
+volatile uint32_t hardfault_cfsr;
+volatile uint32_t hardfault_hfsr;
+volatile uint32_t hardfault_dfsr;
+volatile uint32_t hardfault_afsr;
+volatile uint32_t hardfault_mmfar;
+volatile uint32_t hardfault_bfar;
+volatile uint32_t hardfault_stack_frame[8];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -103,15 +114,33 @@ void NMI_Handler(void)
 /**
   * @brief This function handles Hard fault interrupt.
   */
-void HardFault_Handler(void)
+__attribute__((naked)) void HardFault_Handler(void)
 {
-  /* USER CODE BEGIN HardFault_IRQn 0 */
+  __asm volatile(
+      "tst lr, #4\n"
+      "ite eq\n"
+      "mrseq r0, msp\n"
+      "mrsne r0, psp\n"
+      "mov r1, lr\n"
+      "b HardFault_Capture\n");
+}
 
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    /* USER CODE END W1_HardFault_IRQn 0 */
+__attribute__((noinline, used)) void HardFault_Capture(
+    const uint32_t *stack_frame, uint32_t exc_return) {
+  hardfault_exc_return = exc_return;
+  hardfault_cfsr = SCB->CFSR;
+  hardfault_hfsr = SCB->HFSR;
+  hardfault_dfsr = SCB->DFSR;
+  hardfault_afsr = SCB->AFSR;
+  hardfault_mmfar = SCB->MMFAR;
+  hardfault_bfar = SCB->BFAR;
+
+  for (uint32_t index = 0U; index < 8U; ++index) {
+    hardfault_stack_frame[index] = stack_frame[index];
+  }
+
+  __disable_irq();
+  for (;;) {
   }
 }
 
