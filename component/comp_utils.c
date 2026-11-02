@@ -7,6 +7,8 @@
 #include <math.h>
 #include <string.h>
 
+#include "bsp_log.h"
+
 /**
  * @brief 计算平方根倒数
  *
@@ -136,8 +138,12 @@ inline void circle_reverse(float* origin) { *origin = -(*origin) + M_2PI; }
  * @param line 行号
  */
 void verify_failed(const char* file, uint32_t line) {
+#if BSP_LOG_ENABLED
+  LOGERROR("verify_failed at %s:%lu", file, (unsigned long)line);
+#else
   RM_UNUSED(file);
   RM_UNUSED(line);
+#endif
   while (1) {
   };
 }
