@@ -86,7 +86,8 @@ LOG_CHANNEL_WRITE(BSP_LOG_CHANNEL_DATA, data, data_size);
 
 ```c
 int printf_log(const char *fmt, ...);
-void Float2Str(char *str, float va); // 输出浮点需要先用此函数进行转换
+void Float2Str(char *str, float va); // 兼容旧接口，目标缓冲区至少为 BSP_LOG_FLOAT_STR_SIZE 字节
+int Float2StrN(char *str, size_t size, float va); // 推荐：带缓冲区长度检查
 ```
                                                                                               
 调用第一个函数，可以通过jlink或dap-link向调试器连接的上位机发送信息，格式和printf相同，示例如下：
@@ -100,7 +101,11 @@ printf_log("Motor %d met some problem, error code %d!\n",3,1);
 
 ```c
 float current_feedback=114.514;
-char* str_buff[64];
+char str_buff[BSP_LOG_FLOAT_STR_SIZE];
 Float2Str(str_buff,current_feedback);
 printf_log("Motor %d met some problem, error code %d!\n",3,1);
 ```
+
+`Float2Str()` 输出固定 3 位小数并进行四舍五入。新代码建议使用
+`Float2StrN()`，传入目标缓冲区大小；当返回值大于等于 `size` 时，输出被截断，
+返回负值表示参数无效或数值超出支持范围。

@@ -1,6 +1,7 @@
 #include "bsp_log.h"
 
-#include <stdlib.h>
+#include <math.h>
+#include <stdint.h>
 #include <string.h>
 
 #if BSP_LOG_ENABLED
@@ -187,15 +188,78 @@ int PrintLog(const char *fmt, ...) {
 #endif
 }
 
-void Float2Str(char *str, float va) {
-  int flag = va < 0;
-  int head = (int)va;
-  int point = (int)((va - head) * 1000);
-  head = abs(head);
-  point = abs(point);
-  if (flag) {
-    sprintf(str, "-%d.%d", head, point);
-  } else {
-    sprintf(str, "%d.%d", head, point);
+static size_t Float2StrAppendChar(char *str, size_t size, size_t position,
+                                  char value) {
+  if (position + 1u < size) {
+    str[position] = value;
   }
+  return position + 1u;
+}
+
+static size_t Float2StrAppendUnsigned(char *str, size_t size, size_t position,
+                                      uint64_t value) {
+  char digits[20];
+  size_t count = 0u;
+
+  do {
+    digits[count++] = (char)('0' + (value % 10u));
+    value /= 10u;
+  } while (value != 0u);
+
+  while (count != 0u) {
+    position = Float2StrAppendChar(str, size, position, digits[--count]);
+  }
+  return position;
+}
+
+int Float2StrN(char *str, size_t size, float va) {
+  const double scaled_value = (double)va * 1000.0;
+  int64_t scaled;
+  uint64_t magnitude;
+  int negative;
+  size_t position = 0u;
+
+  if ((str == NULL) || (size == 0u) || !isfinite(va)) {
+    if ((str != NULL) && (size != 0u)) {
+      str[0] = '\0';
+    }
+    return -1;
+  }
+
+  /* Avoid converting an out-of-range floating-point value to int64_t. */
+  if ((scaled_value > (double)INT64_MAX) ||
+      (scaled_value < (double)INT64_MIN)) {
+    str[0] = '\0';
+    return -1;
+  }
+
+  /* Round to the nearest 0.001 instead of truncating the fractional part. */
+  if (scaled_value >= 0.0) {
+    scaled = (int64_t)(scaled_value + 0.5);
+  } else {
+    scaled = (int64_t)(scaled_value - 0.5);
+  }
+
+  negative = (scaled < 0);
+  if (negative) {
+    /* This also handles INT64_MIN without signed overflow. */
+    magnitude = (uint64_t)(-(scaled + 1)) + 1u;
+  } else {
+    magnitude = (uint64_t)scaled;
+  }
+
+  if (negative) {
+    position = Float2StrAppendChar(str, size, position, '-');
+  }
+  position = Float2StrAppendUnsigned(str, size, position, magnitude / 1000u);
+  position = Float2StrAppendChar(str, size, position, '.');
+  position = Float2StrAppendChar(str, size, position,
+                                 (char)('0' + (magnitude % 1000u) / 100u));
+  position = Float2StrAppendChar(str, size, position,
+                                 (char)('0' + (magnitude % 100u) / 10u));
+  position =
+      Float2StrAppendChar(str, size, position, (char)('0' + magnitude % 10u));
+
+  str[(position < size) ? position : size - 1u] = '\0';
+  return (position > (size_t)INT32_MAX) ? -1 : (int)position;
 }

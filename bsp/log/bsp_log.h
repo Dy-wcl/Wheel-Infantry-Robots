@@ -2,6 +2,7 @@
 #define _BSP_LOG_H
 
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdio.h>
 
 #include "SEGGER_RTT.h"
@@ -128,8 +129,13 @@ int BSPLogPrintfTerminal(unsigned char terminal_id, const char* type,
 int PrintLog(const char* fmt, ...);
 
 /**
- * @brief 利用 sprintf() 将 float 转换为字符串。
+ * @brief 将 float 转换为固定 3 位小数的字符串，并检查目标缓冲区大小。
+ * @param str 目标字符串缓冲区。
+ * @param size 目标缓冲区大小，包含结尾的 '\0'。
+ * @param va 要转换的浮点数。
+ * @return 不包含 '\0' 的完整字符串长度；参数无效或数值超出支持范围时返回 -1。
+ *         返回值大于等于 size 时表示输出被截断。
  */
-void Float2Str(char* str, float va);
+int Float2StrN(char* str, size_t size, float va);
 
 #endif
