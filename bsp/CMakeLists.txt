@@ -4,7 +4,6 @@ set(_bsp_sources
     ${CMAKE_CURRENT_LIST_DIR}/bsp_pwm/bsp_pwm.c
     ${CMAKE_CURRENT_LIST_DIR}/bsp_uart/bsp_uart.c
     ${CMAKE_CURRENT_LIST_DIR}/dwt/bsp_dwt.c
-    ${CMAKE_CURRENT_LIST_DIR}/log/bsp_log.c
     ${CMAKE_CURRENT_LIST_DIR}/../SEGGER/RTT/SEGGER_RTT.c
     ${CMAKE_CURRENT_LIST_DIR}/../SEGGER/RTT/SEGGER_RTT_printf.c
     # ${CMAKE_CURRENT_LIST_DIR}/bsp_iic/bsp_iic.c
@@ -19,7 +18,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/bsp_pwm
     ${CMAKE_CURRENT_LIST_DIR}/bsp_uart
     ${CMAKE_CURRENT_LIST_DIR}/dwt
-    ${CMAKE_CURRENT_LIST_DIR}/log
 
     # ${CMAKE_CURRENT_LIST_DIR}/bsp_iic
     # ${CMAKE_CURRENT_LIST_DIR}/bsp_usb

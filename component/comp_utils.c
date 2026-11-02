@@ -4,6 +4,7 @@
 
 #include "comp_utils.h"
 
+#include "SEGGER_RTT.h"
 #include <math.h>
 #include <string.h>
 
@@ -57,7 +58,7 @@ float abs_clampf(float x, float limit) {
  * @param lo 下限
  * @param hi 上限
  */
-inline void clampf(float* origin, float lo, float hi) {
+inline void clampf(float *origin, float lo, float hi) {
   ASSERT(origin);
   ASSERT(hi > lo);
   if (*origin < lo)
@@ -113,11 +114,13 @@ inline float circle_error(float sp, float fb, float range) {
  * @param delta 变化量
  * @param range 被操作的值变化范围，正数时起效
  */
-inline void circle_add(float* origin, float delta, float range) {
+inline void circle_add(float *origin, float delta, float range) {
   float out = *origin + delta;
   if (range > 0.0f) {
-    while (out >= range) out -= range;
-    while (out < 0.0f) out += range;
+    while (out >= range)
+      out -= range;
+    while (out < 0.0f)
+      out += range;
   }
   *origin = out;
 }
@@ -127,7 +130,7 @@ inline void circle_add(float* origin, float delta, float range) {
  *
  * @param origin 被操作的值
  */
-inline void circle_reverse(float* origin) { *origin = -(*origin) + M_2PI; }
+inline void circle_reverse(float *origin) { *origin = -(*origin) + M_2PI; }
 
 /**
  * @brief 断言失败处理
@@ -135,9 +138,13 @@ inline void circle_reverse(float* origin) { *origin = -(*origin) + M_2PI; }
  * @param file 文件名
  * @param line 行号
  */
-void verify_failed(const char* file, uint32_t line) {
+void verify_failed(const char *file, uint32_t line) {
   RM_UNUSED(file);
   RM_UNUSED(line);
+  SEGGER_RTT_printf(0, RTT_CTRL_TEXT_RED
+                       "Verify failed in %s at line %lu"
+                       RTT_CTRL_RESET "\n",
+                    file, line);
   while (1) {
   };
 }
