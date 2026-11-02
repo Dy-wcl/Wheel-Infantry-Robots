@@ -188,6 +188,9 @@ int PrintLog(const char *fmt, ...) {
 #endif
 }
 
+// 有空间时写入字符；
+// 无空间时跳过写入，但仍然增加逻辑位
+// 同时保留最后一位
 static size_t Float2StrAppendChar(char *str, size_t size, size_t position,
                                   char value) {
   if (position + 1u < size) {
@@ -196,6 +199,7 @@ static size_t Float2StrAppendChar(char *str, size_t size, size_t position,
   return position + 1u;
 }
 
+// 无符号整数转换成十进制字符
 static size_t Float2StrAppendUnsigned(char *str, size_t size, size_t position,
                                       uint64_t value) {
   char digits[20];
@@ -212,6 +216,7 @@ static size_t Float2StrAppendUnsigned(char *str, size_t size, size_t position,
   return position;
 }
 
+// 浮点数转换成固定三位小数的字符串
 int Float2StrN(char *str, size_t size, float va) {
   const double scaled_value = (double)va * 1000.0;
   int64_t scaled;
