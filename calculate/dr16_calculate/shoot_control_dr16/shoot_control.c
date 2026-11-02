@@ -91,22 +91,22 @@ void shoot_speed_pid_init(void) {
   PIDInit(&pid_speed[0], 10.0f, 0.0f, 0.0f, 12000.0f, 3000.0f, 0.0f,
           PID_Integral_Limit | PID_Derivative_On_Measurement |
               PID_OutputFilter | PID_DerivativeFilter,
-          0.0f, 0.0f, 0.05f, 0.1f);
+          0.0f, 0.0f, 0.0015f, 0.0015f);
   // 初始化右摩擦轮电机速度 PID 参数（M3508 单速度环）
   PIDInit(&pid_speed[1], 10.0f, 0.0f, 0.0f, 12000.0f, 3000.0f, 0.0f,
           PID_Integral_Limit | PID_Derivative_On_Measurement |
               PID_OutputFilter | PID_DerivativeFilter,
-          0.0f, 0.0f, 0.05f, 0.1f);
+          0.0f, 0.0f, 0.0015f, 0.0015f);
   // 初始化拨弹电机速度环 PID 参数（M2006 双环内环，输出电流限幅 10000）
   PIDInit(&pid_speed[2], 8.0f, 0.0f, 0.0f, 10000.0f, 3000.0f, 0.0f,
           PID_Integral_Limit | PID_Derivative_On_Measurement |
               PID_OutputFilter | PID_DerivativeFilter,
-          0.0f, 0.0f, 0.05f, 0.1f);
+          0.0f, 0.0f, 0.0015f, 0.0015f);
   // 初始化拨弹电机位置环 PID（仅 M2006 需要位置环，输出为目标速度）
   PIDInit(&pid_location, 8.0f, 0.0f, 0.0f, 3000.0f, 1000.0f, 0.0f,
           PID_Integral_Limit | PID_Derivative_On_Measurement |
               PID_OutputFilter | PID_DerivativeFilter,
-          0.0f, 0.0f, 0.05f, 0.1f);
+          0.0f, 0.0f, 0.0015f, 0.0015f);
 
   pid_init_result[0] =
       pid_device_init(&shoot_pid_devices[0], &shoot_motors[0],

@@ -60,17 +60,22 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
+     ${CMAKE_CURRENT_LIST_DIR}/SEGGER/RTT/SEGGER_RTT.c
+    ${CMAKE_CURRENT_LIST_DIR}/SEGGER/RTT/SEGGER_RTT_printf.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    ${CMAKE_CURRENT_LIST_DIR}/SEGGER/RTT
+    ${CMAKE_CURRENT_LIST_DIR}/SEGGER/Config
 )
 
 # Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
     $<$<CONFIG:Debug>:MCU_DEBUG_BUILD>
+    $<$<CONFIG:Release>:DISABLE_LOG_SYSTEM>
 )
 
 # Remove wrong libob.a library dependency when using cpp files
