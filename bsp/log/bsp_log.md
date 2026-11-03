@@ -42,7 +42,7 @@ Debug 配置默认定义 `MCU_DEBUG_BUILD` 并启用日志；Release 配置定�
 | 通道 | 名称 | 默认缓冲区 | 用途 |
 | --- | --- | ---: | --- |
 | 0 | Terminal | RTT 默认值 | 彩色日志和虚拟终端 |
-| 1 | DataOut | 1024 字节 | 原始数据输出 |
+| 1 | JScope_t4f4f4f4 | 1024 字节 | J-Scope 时间戳加三路 float32 波形数据 |
 | 2 | Reserved | 256 字节 | 预留数据输出 |
 
 日志级别使用 RTT 通道 0 中的不同虚拟 Terminal，因此在 J-Link RTT Viewer

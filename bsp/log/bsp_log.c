@@ -14,8 +14,8 @@ static char data_buffer[1024];
 static char reserved_buffer[256];
 /* Keep the complete formatted line out of the caller's task stack. */
 static char line_buffer[512];
-static StaticSemaphore_t line_mutex_storage;
-static SemaphoreHandle_t line_mutex;
+static StaticSemaphore_t line_mutex_storage; // 为互斥锁提供实际存储空间
+static SemaphoreHandle_t line_mutex;         // 互斥锁句柄
 #endif
 
 static int last_error;
@@ -24,7 +24,8 @@ int BSPLogInit(void) {
 #if BSP_LOG_ENABLED
 
   if (line_mutex == NULL) {
-    line_mutex = xSemaphoreCreateMutexStatic(&line_mutex_storage);
+    line_mutex =
+        xSemaphoreCreateMutexStatic(&line_mutex_storage); // 静态创建互斥锁
   }
   if (line_mutex == NULL) {
     last_error = -1;
@@ -32,9 +33,10 @@ int BSPLogInit(void) {
   }
 
   SEGGER_RTT_Init();
-  last_error = SEGGER_RTT_ConfigUpBuffer(BSP_LOG_CHANNEL_DATA, "DataOut",
-                                         data_buffer, sizeof(data_buffer),
-                                         SEGGER_RTT_MODE_NO_BLOCK_SKIP);
+  /* One uint32 timestamp followed by three float32 values per sample. */
+  last_error = SEGGER_RTT_ConfigUpBuffer(
+      BSP_LOG_CHANNEL_DATA, "JScope_t4f4f4f4", data_buffer, sizeof(data_buffer),
+      SEGGER_RTT_MODE_NO_BLOCK_SKIP);
 
   if (last_error == 0) {
     last_error = SEGGER_RTT_ConfigUpBuffer(
