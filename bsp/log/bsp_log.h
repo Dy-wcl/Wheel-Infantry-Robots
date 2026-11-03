@@ -15,6 +15,12 @@
 #define BSP_LOG_TERMINAL_INFO 1u
 #define BSP_LOG_TERMINAL_WARNING 2u
 #define BSP_LOG_TERMINAL_ERROR 3u
+#define BSP_LOG_TERMINAL_MOUDULS 4u
+#define BSP_LOG_TERMINAL_TASK 5u
+#define BSP_LOG_TERMINAL_BSP 6u
+#define BSP_LOG_TERMINAL_ARITHMETIC 7u
+#define BSP_LOG_TERMINAL_APP 8u
+#define BSP_LOG_TERMINAL_CALUATE 9u
 
 /**
  * @brief 初始化 RTT 日志系统和默认上行通道。
@@ -44,7 +50,7 @@ int BSPLogPrintfTerminal(unsigned char terminal_id, const char* type,
                          const char* color, const char* format, ...);
 
 /**
- * @brief 日志功能原型，供 LOG、LOGINFO、LOGWARNING、LOGERROR 使用。
+ * @brief 日志功能原型，供各类日志宏使用。
  */
 #if BSP_LOG_ENABLED
 #define LOG_PROTO(terminal, type, color, format, ...) \
@@ -75,6 +81,24 @@ int BSPLogPrintfTerminal(unsigned char terminal_id, const char* type,
 #define LOGERROR(format, ...)                                       \
   LOG_PROTO(BSP_LOG_TERMINAL_ERROR, "E:", RTT_CTRL_TEXT_BRIGHT_RED, \
             format, ##__VA_ARGS__)
+#define LOGMOUDULS(format, ...)                                      \
+  LOG_PROTO(BSP_LOG_TERMINAL_MOUDULS, "M:", RTT_CTRL_TEXT_BRIGHT_BLUE, \
+            format, ##__VA_ARGS__)
+#define LOGTASK(format, ...)                                         \
+  LOG_PROTO(BSP_LOG_TERMINAL_TASK, "T:", RTT_CTRL_TEXT_BRIGHT_MAGENTA, \
+            format, ##__VA_ARGS__)
+#define LOGBSP(format, ...)                                          \
+  LOG_PROTO(BSP_LOG_TERMINAL_BSP, "B:", RTT_CTRL_TEXT_BRIGHT_CYAN, \
+            format, ##__VA_ARGS__)
+#define LOGARITHMETIC(format, ...)                                   \
+  LOG_PROTO(BSP_LOG_TERMINAL_ARITHMETIC, "A:", RTT_CTRL_TEXT_BRIGHT_WHITE, \
+            format, ##__VA_ARGS__)
+#define LOGAPP(format, ...)                                          \
+  LOG_PROTO(BSP_LOG_TERMINAL_APP, "P:", RTT_CTRL_TEXT_BLUE, \
+            format, ##__VA_ARGS__)
+#define LOGCALUATE(format, ...)                                      \
+  LOG_PROTO(BSP_LOG_TERMINAL_CALUATE, "C:", RTT_CTRL_TEXT_MAGENTA, \
+            format, ##__VA_ARGS__)
 #else
 #define LOG_CLEAR() \
   do {              \
@@ -90,6 +114,24 @@ int BSPLogPrintfTerminal(unsigned char terminal_id, const char* type,
   } while (0)
 #define LOGERROR(format, ...) \
   do {                        \
+  } while (0)
+#define LOGMOUDULS(format, ...) \
+  do {                         \
+  } while (0)
+#define LOGTASK(format, ...) \
+  do {                      \
+  } while (0)
+#define LOGBSP(format, ...) \
+  do {                     \
+  } while (0)
+#define LOGARITHMETIC(format, ...) \
+  do {                              \
+  } while (0)
+#define LOGAPP(format, ...) \
+  do {                     \
+  } while (0)
+#define LOGCALUATE(format, ...) \
+  do {                         \
   } while (0)
 #endif
 

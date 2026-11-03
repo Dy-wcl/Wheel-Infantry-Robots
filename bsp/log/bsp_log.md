@@ -1,12 +1,12 @@
 # bsp_log
 
-`bsp_log` 是基于 SEGGER RTT 的日志模块。日志写入 RTT 上行通道 0，使用 RTT 的虚拟 Terminal 区分普通、信息、警告和错误日志。
+`bsp_log` 是基于 SEGGER RTT 的日志模块。日志写入 RTT 上行通道 0，使用 RTT 的虚拟 Terminal 区分普通、信息、警告、错误以及各功能模块日志。
 
 ## 启用条件
 
 编译时定义 `BSP_LOG_ENABLED` 后，日志实现和日志宏才会启用。未定义该宏时：
 
-- `LOG`、`LOGINFO`、`LOGWARNING`、`LOGERROR` 和 `LOG_CLEAR` 都是空操作；
+- `LOG`、`LOGINFO`、`LOGWARNING`、`LOGERROR`、各模块日志宏和 `LOG_CLEAR` 都是空操作；
 - `BSPLogInit()`、`BSPLogSelectTerminal()` 和 `BSPLogPrintfTerminal()` 返回负值；
 - `Float2StrN()` 不受该宏影响，仍然可用。
 
@@ -41,6 +41,12 @@ LOG("system ready\r\n");
 LOGINFO("motor=%d rpm=%d\r\n", motor_id, rpm);
 LOGWARNING("temperature=%.1f\r\n", temperature);
 LOGERROR("can error=%d\r\n", error_code);
+LOGMOUDULS("module initialized: %s", module_name);
+LOGTASK("task state=%d", task_state);
+LOGBSP("peripheral ready: %s", peripheral_name);
+LOGARITHMETIC("vector norm=%f", norm);
+LOGAPP("command=%u", command);
+LOGCALUATE("result=%f", result);
 LOG_CLEAR();
 ```
 
@@ -50,8 +56,14 @@ LOG_CLEAR();
 | `LOGINFO`    |             1 | `I:` | 亮绿色 |
 | `LOGWARNING` |             2 | `W:` | 亮黄色 |
 | `LOGERROR`   |             3 | `E:` | 亮红色 |
+| `LOGMOUDULS` |             4 | `M:` | 亮蓝色 |
+| `LOGTASK`    |             5 | `T:` | 亮洋红色 |
+| `LOGBSP`     |             6 | `B:` | 亮青色 |
+| `LOGARITHMETIC` |          7 | `A:` | 亮白色 |
+| `LOGAPP`     |             8 | `P:` | 蓝色 |
+| `LOGCALUATE` |             9 | `C:` | 洋红色 |
 
-`LOGINFO`、`LOGWARNING` 和 `LOGERROR` 会自动在日志前添加两个空格、颜色和级别前缀，并在末尾添加 `\r\n` 和 RTT 颜色复位控制码。调用者不需要再手动添加换行；如果格式字符串本身包含换行，输出中会保留它。
+`LOGINFO`、`LOGWARNING`、`LOGERROR` 以及各模块日志宏会自动在日志前添加两个空格、颜色和级别前缀，并在末尾添加 `\r\n` 和 RTT 颜色复位控制码。调用者不需要再手动添加换行；如果格式字符串本身包含换行，输出中会保留它。
 
 `LOG_CLEAR()` 直接向 Terminal 0 写入 RTT 清屏控制码。它不经过格式化，也不使用 `bsp_log.c` 的共享行缓冲区。
 
@@ -97,10 +109,16 @@ BSPLogPrintfTerminal(BSP_LOG_TERMINAL_ERROR,
 #define BSP_LOG_TERMINAL_DEFAULT 0u
 #define BSP_LOG_TERMINAL_INFO    1u
 #define BSP_LOG_TERMINAL_WARNING 2u
-#define BSP_LOG_TERMINAL_ERROR   3u
+#define BSP_LOG_TERMINAL_ERROR      3u
+#define BSP_LOG_TERMINAL_MOUDULS    4u
+#define BSP_LOG_TERMINAL_TASK       5u
+#define BSP_LOG_TERMINAL_BSP        6u
+#define BSP_LOG_TERMINAL_ARITHMETIC 7u
+#define BSP_LOG_TERMINAL_APP        8u
+#define BSP_LOG_TERMINAL_CALUATE    9u
 ```
 
-Terminal 0 到 3 都属于 RTT 通道 0 内的虚拟终端，不是四个独立的 RTT 通道。`BSPLogSelectTerminal()` 可改变 RTT 当前活动 Terminal：
+Terminal 0 到 9 都属于 RTT 通道 0 内的虚拟终端，不是十个独立的 RTT 通道。`BSPLogSelectTerminal()` 可改变 RTT 当前活动 Terminal：
 
 ```c
 if (BSPLogSelectTerminal(BSP_LOG_TERMINAL_INFO) < 0) {
