@@ -9,21 +9,12 @@
 #include "SEGGER_RTT_Conf.h"
 
 #define BSP_LOG_CHANNEL_TERMINAL 0u
-#define BSP_LOG_CHANNEL_DATA 1u
-#define BSP_LOG_CHANNEL_RESERVED 2u
 
 /* Virtual terminals are multiplexed inside RTT channel 0. */
 #define BSP_LOG_TERMINAL_DEFAULT 0u
 #define BSP_LOG_TERMINAL_INFO 1u
 #define BSP_LOG_TERMINAL_WARNING 2u
 #define BSP_LOG_TERMINAL_ERROR 3u
-
-/* Debug builds enable logs by default. Release can be overridden explicitly. */
-#if defined(MCU_DEBUG_BUILD)
-#define BSP_LOG_ENABLED 1
-#else
-#define BSP_LOG_ENABLED 0
-#endif
 
 /**
  * @brief 初始化 RTT 日志系统和默认上行通道。
@@ -38,27 +29,9 @@ int BSPLogInit(void);
 int BSPLogGetLastError(void);
 
 /**
- * @brief 配置 RTT 上行通道。
- */
-int BSPLogConfigUpBuffer(unsigned index, const char* name, void* buffer,
-                         unsigned size, unsigned flags);
-
-/**
- * @brief 配置 RTT 下行通道。
- */
-int BSPLogConfigDownBuffer(unsigned index, const char* name, void* buffer,
-                           unsigned size, unsigned flags);
-
-/**
  * @brief 选择通道 0 内的 RTT 虚拟终端，终端编号范围由 SEGGER RTT 实现定义。
  */
 int BSPLogSelectTerminal(unsigned char terminal_id);
-
-/**
- * @brief 向指定 RTT 上行通道写入原始数据。
- * @return 实际写入的字节数，失败返回负值。
- */
-int BSPLogWriteChannel(unsigned channel, const void* data, unsigned size);
 
 /**
  * @brief 将一条格式化日志原子地写入指定 RTT 虚拟终端。
@@ -119,14 +92,6 @@ int BSPLogPrintfTerminal(unsigned char terminal_id, const char* type,
   do {                        \
   } while (0)
 #endif
-
-#define LOG_CHANNEL_WRITE(channel, data, size) \
-  BSPLogWriteChannel((channel), (data), (size))
-
-/**
- * @brief 通过 SEGGER RTT 打印格式化日志。
- */
-int PrintLog(const char* fmt, ...);
 
 /**
  * @brief 将 float 转换为固定 3 位小数的字符串，并检查目标缓冲区大小。

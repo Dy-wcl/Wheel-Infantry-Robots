@@ -1,111 +1,147 @@
 # bsp_log
 
-<p align='right'>neozng1@hnu.edu.cn</p>
+`bsp_log` 是基于 SEGGER RTT 的日志模块。日志写入 RTT 上行通道 0，使用 RTT 的虚拟 Terminal 区分普通、信息、警告和错误日志。
 
-## 使用说明
+## 启用条件
 
-bsp_log是基于segger RTT实现的日志打印模块。
+编译时定义 `BSP_LOG_ENABLED` 后，日志实现和日志宏才会启用。未定义该宏时：
 
-推荐使用`bsp_log.h`中提供的三级日志：
+- `LOG`、`LOGINFO`、`LOGWARNING`、`LOGERROR` 和 `LOG_CLEAR` 都是空操作；
+- `BSPLogInit()`、`BSPLogSelectTerminal()` 和 `BSPLogPrintfTerminal()` 返回负值；
+- `Float2StrN()` 不受该宏影响，仍然可用。
 
-```c
-#define LOGINFO(format,...)
-#define LOGWARNING(format,...)
-#define LOGERROR(format,...)
-```
+当前工程的 Debug 构建定义了 `BSP_LOG_ENABLED`。如果 Release 构建也需要日志，应在对应的构建配置中定义该宏。
 
-分别用于输出不同等级的日志。这些日志宏使用 `vsnprintf()` 格式化，支持
-`%f`、`%.2f` 等浮点格式（工程已链接 `_printf_float`）。底层轻量版
-`SEGGER_RTT_printf()` / `PrintLog()` 不支持 `%f`，需要先转换成字符串。
+## 初始化
 
-### 栈使用与并发
-
-`BSPLogPrintfTerminal()` 将完整行缓冲区放在静态 RAM 中，默认大小仍为
-512 字节，由 `BSP_LOG_LINE_BUFFER_SIZE` 配置。颜色、终端、换行、颜色复位
-和超长日志的截断行为不变。各任务通过静态分配的 FreeRTOS 互斥锁串行使用
-该缓冲区；等待时支持优先级继承，不在整个浮点格式化过程中关闭中断。
-
-在调度器启动前调用 `BSPLogInit()`；初始化后可在启动阶段或普通任务中打印。
-任务竞争缓冲区时会等待锁释放；不支持 ISR、关中断/临界区、调度器挂起期间
-调用，以上调用返回负值。RTT 缓冲区满时的默认行为仍为跳过本条输出。
-格式化函数自身的栈帧减少，但 `vsnprintf()` 及浮点转换仍使用任务栈，不能
-仅根据行缓冲区移出栈就把任务栈减为 512 字节。
-
-Debug 配置默认定义 `MCU_DEBUG_BUILD` 并启用日志；Release 配置定义
-`DISABLE_LOG_SYSTEM`，日志宏为空操作。需要在现场诊断时保留日志，可以额外定义
-`BSP_LOG_FORCE_ENABLE`。
-
-## RTT 通道和终端
-
-日志系统初始化后使用以下上行通道：
-
-| 通道 | 名称 | 默认缓冲区 | 用途 |
-| --- | --- | ---: | --- |
-| 0 | Terminal | RTT 默认值 | 彩色日志和虚拟终端 |
-| 1 | JScope_t4f4f4f4 | 1024 字节 | J-Scope 时间戳加三路 float32 波形数据 |
-| 2 | Reserved | 256 字节 | 预留数据输出 |
-
-日志级别使用 RTT 通道 0 中的不同虚拟 Terminal，因此在 J-Link RTT Viewer
-中可分别打开对应终端查看：
-
-| 宏 | Terminal | 说明 |
-| --- | ---: | --- |
-| `LOG` | 0 | 普通日志 |
-| `LOGINFO` | 1 | 信息日志（绿色） |
-| `LOGWARNING` | 2 | 警告日志（黄色） |
-| `LOGERROR` | 3 | 错误日志（红色） |
-
-每条日志由 `SEGGER_RTT_TerminalOut()` 完整写入目标 Terminal，写入后自动恢复
-之前的活动 Terminal，避免不同任务并发输出时互相串线。Terminal 是通道 0 内的
-虚拟终端，不是新的 RTT 上行通道；RTT Viewer 仍只需要连接 `Terminal` 通道。
-如果上位机只显示当前 Terminal，请在 Viewer 中启用 Terminal 0、1、2、3 四个
-窗口（或通过终端筛选分别查看）。
+启用日志时，应在启动调度器前调用一次 `BSPLogInit()`：
 
 ```c
-BSPLogInit();
-BSPLogSelectTerminal(0);             // 选择通道 0 内的虚拟终端
-LOG_CHANNEL_WRITE(BSP_LOG_CHANNEL_DATA, data, data_size);
+int main(void) {
+  // HAL、外设和时钟初始化...
+  BSPLogInit() 
+  
+
+  // 创建并启动 RTOS 调度器...
+}
 ```
 
-`SEGGER_RTT_SetTerminal()` 选择的是通道 0 内的虚拟终端，终端编号不是独立 RTT
-通道号。需要自定义缓冲区时，可调用 `BSPLogConfigUpBuffer()` 或
-`BSPLogConfigDownBuffer()`；非 0 通道只能在首次配置时设置名称、地址和大小。
-默认缓冲模式为 `SEGGER_RTT_MODE_NO_BLOCK_SKIP`，缓冲区满时跳过本次写入，不阻塞实时任务。
+初始化函数会完成以下操作：
 
-**若想启用RTT，必须通过`launch.json`的`debug-jlink`启动调试（不论使用什么调试器）。** 按照`VSCode+Ozone环境配置`完成配置之后的cmsis dap和daplink是可以支持Jlink全家桶的。
+1. 创建静态分配的 FreeRTOS 互斥锁；
+2. 初始化 SEGGER RTT；
+3. 将 RTT 通道 0 的默认虚拟 Terminal 设置为 0。
 
-另外，若你使用的是cmsis-dap和daplink，**请在 *jlink* 调试任务启动之后再打开`log`任务。**（均在项目文件夹下的.vsocde/task.json中，有注释自行查看）。否则可能出线RTT viewer无法连接客户端的情况。
+如果没有成功调用 `BSPLogInit()`，`BSPLogPrintfTerminal()` 会因为内部互斥锁未创建而返回 `-1`。`BSPLogGetLastError()` 返回最近一次 `BSPLogInit()` 或 `BSPLogSelectTerminal()` 更新的错误码，不是每条日志的独立状态。
 
-在ozone中查看log输出，直接打开console调试任务台和terminal调试中断便可看到调试输出。
-
-> 由于ozone版本的原因，可能出现日志不换行或没有颜色。
-
-## 自定义输出
-
-你也可以自定义输出格式，详见Segger RTT的文档。
+## 日志宏
 
 ```c
-int printf_log(const char *fmt, ...);
-void Float2Str(char *str, float va); // 兼容旧接口，目标缓冲区至少为 BSP_LOG_FLOAT_STR_SIZE 字节
-int Float2StrN(char *str, size_t size, float va); // 推荐：带缓冲区长度检查
+LOG("system ready\r\n");
+LOGINFO("motor=%d rpm=%d\r\n", motor_id, rpm);
+LOGWARNING("temperature=%.1f\r\n", temperature);
+LOGERROR("can error=%d\r\n", error_code);
+LOG_CLEAR();
 ```
-                                                                                              
-调用第一个函数，可以通过jlink或dap-link向调试器连接的上位机发送信息，格式和printf相同，示例如下：
+
+| 宏           | 虚拟 Terminal | 前缀 | 颜色   |
+| ------------ | ------------: | ---- | ------ |
+| `LOG`        |             0 | 无   | 无     |
+| `LOGINFO`    |             1 | `I:` | 亮绿色 |
+| `LOGWARNING` |             2 | `W:` | 亮黄色 |
+| `LOGERROR`   |             3 | `E:` | 亮红色 |
+
+`LOGINFO`、`LOGWARNING` 和 `LOGERROR` 会自动在日志前添加两个空格、颜色和级别前缀，并在末尾添加 `\r\n` 和 RTT 颜色复位控制码。调用者不需要再手动添加换行；如果格式字符串本身包含换行，输出中会保留它。
+
+`LOG_CLEAR()` 直接向 Terminal 0 写入 RTT 清屏控制码。它不经过格式化，也不使用 `bsp_log.c` 的共享行缓冲区。
+
+## 直接调用格式化接口
+
+需要动态选择 Terminal 或自定义前缀、颜色时，可以直接调用：
 
 ```c
-printf_log("Hello World!\n");
-printf_log("Motor %d met some problem, error code %d!\n",3,1);
+BSPLogPrintfTerminal(BSP_LOG_TERMINAL_ERROR,
+                      "E:", RTT_CTRL_TEXT_BRIGHT_RED,
+                      "motor=%u failed", motor_id);
 ```
 
-第二个函数可以将浮点类型转换成字符串以方便发送：
+`type`、`color` 和 `format` 必须是有效的非空字符串指针。任一参数为 `NULL` 时，函数直接返回 `-1`。
+
+函数使用一个固定的 512 字节静态行缓冲区。完整输出由以下部分组成：
+
+```text
+两个空格 + color + type + 格式化正文 + "\r\n" + RTT_CTRL_RESET
+```
+
+正文过长时会被截断，但函数仍保证输出以字符串结束符结尾。正文可用长度取决于 `color` 和 `type` 的长度；512 字节目前是代码中的固定值，不由宏配置。前缀本身无法放入缓冲区时，函数返回 `-1`。
+
+返回值是 `SEGGER_RTT_TerminalOut()` 的返回值：非负值表示 RTT 接口处理了该次输出，负值表示参数、Terminal 或 RTT 状态错误。RTT 使用跳过模式且空间不足时，可能返回 0，表示本次日志没有写入。
+
+## 调度器和调用上下文
+
+初始化后，普通任务可以并发调用日志接口。任务之间通过静态 FreeRTOS 互斥锁串行使用共享行缓冲区，竞争时会等待锁释放。
+
+`BSPLogPrintfTerminal()` 不支持以下调用上下文，遇到这些情况会返回 `-1`：
+
+- ISR 中调用；
+- 调度器已启动但当前不处于运行状态；
+- 关闭中断或处于使用 `BASEPRI` 的临界区；
+- 未先成功初始化 `BSPLogInit()`。
+
+调度器尚未启动时，函数允许单线程启动代码调用，并跳过互斥锁。`vsnprintf()` 的格式化栈仍由调用者任务承担；静态行缓冲区只移除了 512 字节的本地数组，不能据此推断任务栈只需要 512 字节。
+
+## RTT Terminal
 
 ```c
-float current_feedback=114.514;
-char str_buff[BSP_LOG_FLOAT_STR_SIZE];
-Float2Str(str_buff,current_feedback);
-printf_log("Motor %d met some problem, error code %d!\n",3,1);
+#define BSP_LOG_CHANNEL_TERMINAL 0u
+#define BSP_LOG_TERMINAL_DEFAULT 0u
+#define BSP_LOG_TERMINAL_INFO    1u
+#define BSP_LOG_TERMINAL_WARNING 2u
+#define BSP_LOG_TERMINAL_ERROR   3u
 ```
 
-`Float2Str()` 输出固定 3 位小数并进行四舍五入。新代码建议使用
-`Float2StrN()`，传入目标缓冲区大小；当返回值大于等于 `size` 时，输出被截断，
-返回负值表示参数无效或数值超出支持范围。
+Terminal 0 到 3 都属于 RTT 通道 0 内的虚拟终端，不是四个独立的 RTT 通道。`BSPLogSelectTerminal()` 可改变 RTT 当前活动 Terminal：
+
+```c
+if (BSPLogSelectTerminal(BSP_LOG_TERMINAL_INFO) < 0) {
+  // Terminal 编号无效或 RTT 缓冲区空间不足
+}
+```
+
+日志宏和 `BSPLogPrintfTerminal()` 会明确指定目标 Terminal。`BSPLogPrintfTerminal()` 完成写入后，SEGGER RTT 会恢复调用前的活动 Terminal，因此多个任务使用不同日志级别时不会因为活动 Terminal 被永久改变而串到其他终端。
+
+在 RTT Viewer 或其他 RTT 客户端中，应连接通道 0，并按需要查看虚拟 Terminal 0、1、2、3。实际能否看到日志还取决于调试器已连接目标芯片并运行了支持 RTT 的调试会话。
+
+## 浮点数转字符串
+
+`Float2StrN()` 将 `float` 转换为固定三位小数的十进制字符串，并进行四舍五入：
+
+```c
+char text[32];
+int length = Float2StrN(text, sizeof(text), -12.3456f);
+// text: "-12.346"
+// length: 7
+```
+
+`size` 包含结尾的 `\0`。即使目标缓冲区太小，函数也会尽量写入截断后的、以 `\0` 结尾的字符串，并返回完整结果长度；因此返回值大于等于 `size` 表示发生了截断。
+
+以下情况返回 `-1`，并在目标缓冲区可用时写入空字符串：
+
+- `str == NULL`；
+- `size == 0`；
+- 输入是 NaN 或无穷大；
+- 缩放到千分位后超出内部 `int64_t` 表示范围。
+
+该函数不依赖 `BSP_LOG_ENABLED`，可用于 RTT 日志之外的字符串格式化场景。
+
+## 相关接口
+
+| 接口                     | 作用                                   |
+| ------------------------ | -------------------------------------- |
+| `BSPLogInit()`           | 初始化 RTT 和日志互斥锁                |
+| `BSPLogGetLastError()`   | 获取最近一次初始化或 Terminal 选择错误 |
+| `BSPLogSelectTerminal()` | 设置 RTT 通道 0 的活动虚拟 Terminal    |
+| `BSPLogPrintfTerminal()` | 格式化并写入指定虚拟 Terminal          |
+| `Float2StrN()`           | 将 `float` 转换为固定三位小数字符串    |
+
+以上接口和宏均声明在 `bsp/log/bsp_log.h` 中。

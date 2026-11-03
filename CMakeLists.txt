@@ -75,7 +75,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
     $<$<CONFIG:Debug>:MCU_DEBUG_BUILD>
-    $<$<CONFIG:Release>:DISABLE_LOG_SYSTEM>
+    $<$<CONFIG:Debug>:BSP_LOG_ENABLED>
 )
 
 # Remove wrong libob.a library dependency when using cpp files

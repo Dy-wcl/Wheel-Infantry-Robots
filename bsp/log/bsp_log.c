@@ -10,8 +10,6 @@
 #include "stm32f4xx.h"
 #include "task.h"
 
-static char data_buffer[1024];
-static char reserved_buffer[256];
 /* Keep the complete formatted line out of the caller's task stack. */
 static char line_buffer[512];
 static StaticSemaphore_t line_mutex_storage; // 为互斥锁提供实际存储空间
@@ -33,20 +31,8 @@ int BSPLogInit(void) {
   }
 
   SEGGER_RTT_Init();
-  /* One uint32 timestamp followed by three float32 values per sample. */
-  last_error = SEGGER_RTT_ConfigUpBuffer(
-      BSP_LOG_CHANNEL_DATA, "JScope_t4f4f4f4", data_buffer, sizeof(data_buffer),
-      SEGGER_RTT_MODE_NO_BLOCK_SKIP);
+  last_error = SEGGER_RTT_SetTerminal(BSP_LOG_TERMINAL_DEFAULT);
 
-  if (last_error == 0) {
-    last_error = SEGGER_RTT_ConfigUpBuffer(
-        BSP_LOG_CHANNEL_RESERVED, "Reserved", reserved_buffer,
-        sizeof(reserved_buffer), SEGGER_RTT_MODE_NO_BLOCK_SKIP);
-  }
-
-  if (last_error == 0) {
-    last_error = SEGGER_RTT_SetTerminal(BSP_LOG_TERMINAL_DEFAULT);
-  }
   return last_error;
 #else
   last_error = -1;
@@ -56,38 +42,6 @@ int BSPLogInit(void) {
 
 int BSPLogGetLastError(void) { return last_error; }
 
-int BSPLogConfigUpBuffer(unsigned index, const char *name, void *buffer,
-                         unsigned size, unsigned flags) {
-#if BSP_LOG_ENABLED
-  last_error = SEGGER_RTT_ConfigUpBuffer(index, name, buffer, size, flags);
-  return last_error;
-#else
-  (void)index;
-  (void)name;
-  (void)buffer;
-  (void)size;
-  (void)flags;
-  last_error = -1;
-  return -1;
-#endif
-}
-
-int BSPLogConfigDownBuffer(unsigned index, const char *name, void *buffer,
-                           unsigned size, unsigned flags) {
-#if BSP_LOG_ENABLED
-  last_error = SEGGER_RTT_ConfigDownBuffer(index, name, buffer, size, flags);
-  return last_error;
-#else
-  (void)index;
-  (void)name;
-  (void)buffer;
-  (void)size;
-  (void)flags;
-  last_error = -1;
-  return -1;
-#endif
-}
-
 int BSPLogSelectTerminal(unsigned char terminal_id) {
 #if BSP_LOG_ENABLED
   last_error = SEGGER_RTT_SetTerminal(terminal_id);
@@ -95,17 +49,6 @@ int BSPLogSelectTerminal(unsigned char terminal_id) {
 #else
   (void)terminal_id;
   last_error = -1;
-  return -1;
-#endif
-}
-
-int BSPLogWriteChannel(unsigned channel, const void *data, unsigned size) {
-#if BSP_LOG_ENABLED
-  return (int)SEGGER_RTT_Write(channel, data, size);
-#else
-  (void)channel;
-  (void)data;
-  (void)size;
   return -1;
 #endif
 }
@@ -123,7 +66,8 @@ int BSPLogPrintfTerminal(unsigned char terminal_id, const char *type,
   BaseType_t lock_required;
   va_list args;
 
-  if ((line_mutex == NULL) || (__get_IPSR() != 0U) || (suffix_size >= 512)) {
+  if ((line_mutex == NULL) || (type == NULL) || (color == NULL) ||
+      (format == NULL) || (__get_IPSR() != 0U) || (suffix_size >= 512)) {
     return -1;
   }
 
@@ -174,19 +118,6 @@ out:
   (void)color;
   (void)format;
   return -1;
-#endif
-}
-
-int PrintLog(const char *fmt, ...) {
-#if BSP_LOG_ENABLED
-  va_list args;
-  va_start(args, fmt);
-  int n = SEGGER_RTT_vprintf(BSP_LOG_CHANNEL_TERMINAL, fmt, &args);
-  va_end(args);
-  return n;
-#else
-  (void)fmt;
-  return 0;
 #endif
 }
 
