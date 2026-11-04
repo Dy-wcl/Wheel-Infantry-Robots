@@ -1,165 +1,141 @@
 # bsp_log
 
-`bsp_log` 是基于 SEGGER RTT 的日志模块。日志写入 RTT 上行通道 0，使用 RTT 的虚拟 Terminal 区分普通、信息、警告、错误以及各功能模块日志。
-
-## 启用条件
-
-编译时定义 `BSP_LOG_ENABLED` 后，日志实现和日志宏才会启用。未定义该宏时：
-
-- `LOG`、`LOGINFO`、`LOGWARNING`、`LOGERROR`、各模块日志宏和 `LOG_CLEAR` 都是空操作；
-- `BSPLogInit()`、`BSPLogSelectTerminal()` 和 `BSPLogPrintfTerminal()` 返回负值；
-- `Float2StrN()` 不受该宏影响，仍然可用。
-
-当前工程的 Debug 构建定义了 `BSP_LOG_ENABLED`。如果 Release 构建也需要日志，应在对应的构建配置中定义该宏。
+`bsp_log` 是基于 SEGGER RTT 的并发安全日志库。日志使用通道 0 输出，调用者传入字符串 `tag` 作为显示标签；tag 不注册、不复制，也不参与等级配置。
 
 ## 初始化
 
-启用日志时，应在启动调度器前调用一次 `BSPLogInit()`：
+在调度器启动前调用一次：
 
 ```c
-int main(void) {
-  // HAL、外设和时钟初始化...
-  BSPLogInit() 
-  
-
-  // 创建并启动 RTOS 调度器...
-}
+BSPLogInit();
+osKernelInitialize();
+MX_FREERTOS_Init();
+osKernelStart();
 ```
 
-初始化函数会完成以下操作：
+`BSPLogInit()` 初始化 RTT，将终端通道 0 显式设为 `SEGGER_RTT_MODE_NO_BLOCK_SKIP`，配置数据通道和 Reserved 通道，并把全局等级设为 `BSP_LOG_DEFAULT_LEVEL`（默认 `INFO`）。日志层不创建或使用 mutex。初始化接口标记为 `NO_THREAD_SAFE_PROMISE`，只能由调度器启动前的单个线程调用；ISR 或调度器启动后调用返回 `STATE_ERR`。成功后重复初始化直接返回成功，不重置 RTT 中已有的数据或运行时等级；初始化失败可以在启动阶段重试。
 
-1. 创建静态分配的 FreeRTOS 互斥锁；
-2. 初始化 SEGGER RTT；
-3. 将 RTT 通道 0 的默认虚拟 Terminal 设置为 0。
+## 等级和过滤
 
-如果没有成功调用 `BSPLogInit()`，`BSPLogPrintfTerminal()` 会因为内部互斥锁未创建而返回 `-1`。`BSPLogGetLastError()` 返回最近一次 `BSPLogInit()` 或 `BSPLogSelectTerminal()` 更新的错误码，不是每条日志的独立状态。
-
-## 日志宏
-
-```c
-LOG("system ready\r\n");
-LOGINFO("motor=%d rpm=%d\r\n", motor_id, rpm);
-LOGWARNING("temperature=%.1f\r\n", temperature);
-LOGERROR("can error=%d\r\n", error_code);
-LOGMOUDULS("module initialized: %s", module_name);
-LOGTASK("task state=%d", task_state);
-LOGBSP("peripheral ready: %s", peripheral_name);
-LOGARITHMETIC("vector norm=%f", norm);
-LOGAPP("command=%u", command);
-LOGCALUATE("result=%f", result);
-LOG_CLEAR();
-```
-
-| 宏           | 虚拟 Terminal | 前缀 | 颜色   |
-| ------------ | ------------: | ---- | ------ |
-| `LOG`        |             0 | 无   | 无     |
-| `LOGINFO`    |             1 | `I:` | 亮绿色 |
-| `LOGWARNING` |             2 | `W:` | 亮黄色 |
-| `LOGERROR`   |             3 | `E:` | 亮红色 |
-| `LOGMOUDULS` |             4 | `M:` | 亮蓝色 |
-| `LOGTASK`    |             5 | `T:` | 亮洋红色 |
-| `LOGBSP`     |             6 | `B:` | 亮青色 |
-| `LOGARITHMETIC` |          7 | `A:` | 亮白色 |
-| `LOGAPP`     |             8 | `P:` | 蓝色 |
-| `LOGCALUATE` |             9 | `C:` | 洋红色 |
-
-`LOGINFO`、`LOGWARNING`、`LOGERROR` 以及各模块日志宏会自动在日志前添加两个空格、颜色和级别前缀，并在末尾添加 `\r\n` 和 RTT 颜色复位控制码。调用者不需要再手动添加换行；如果格式字符串本身包含换行，输出中会保留它。
-
-`LOG_CLEAR()` 直接向 Terminal 0 写入 RTT 清屏控制码。它不经过格式化，也不使用 `bsp_log.c` 的共享行缓冲区。
-
-## 直接调用格式化接口
-
-需要动态选择 Terminal 或自定义前缀、颜色时，可以直接调用：
-
-```c
-BSPLogPrintfTerminal(BSP_LOG_TERMINAL_ERROR,
-                      "E:", RTT_CTRL_TEXT_BRIGHT_RED,
-                      "motor=%u failed", motor_id);
-```
-
-`type`、`color` 和 `format` 必须是有效的非空字符串指针。任一参数为 `NULL` 时，函数直接返回 `-1`。
-
-函数使用一个固定的 512 字节静态行缓冲区。完整输出由以下部分组成：
+等级顺序为：
 
 ```text
-两个空格 + color + type + 格式化正文 + "\r\n" + RTT_CTRL_RESET
+TRACE < DEBUG < INFO < WARN < ERROR < FATAL
 ```
 
-正文过长时会被截断，但函数仍保证输出以字符串结束符结尾。正文可用长度取决于 `color` 和 `type` 的长度；512 字节目前是代码中的固定值，不由宏配置。前缀本身无法放入缓冲区时，函数返回 `-1`。
-
-返回值是 `SEGGER_RTT_TerminalOut()` 的返回值：非负值表示 RTT 接口处理了该次输出，负值表示参数、Terminal 或 RTT 状态错误。RTT 使用跳过模式且空间不足时，可能返回 0，表示本次日志没有写入。
-
-## 调度器和调用上下文
-
-初始化后，普通任务可以并发调用日志接口。任务之间通过静态 FreeRTOS 互斥锁串行使用共享行缓冲区，竞争时会等待锁释放。
-
-`BSPLogPrintfTerminal()` 不支持以下调用上下文，遇到这些情况会返回 `-1`：
-
-- ISR 中调用；
-- 调度器已启动但当前不处于运行状态；
-- 关闭中断或处于使用 `BASEPRI` 的临界区；
-- 未先成功初始化 `BSPLogInit()`。
-
-调度器尚未启动时，函数允许单线程启动代码调用，并跳过互斥锁。`vsnprintf()` 的格式化栈仍由调用者任务承担；静态行缓冲区只移除了 512 字节的本地数组，不能据此推断任务栈只需要 512 字节。
-
-## RTT Terminal
+默认全局等级为 `INFO`，可以运行时修改：
 
 ```c
-#define BSP_LOG_CHANNEL_TERMINAL 0u
-#define BSP_LOG_TERMINAL_DEFAULT 0u
-#define BSP_LOG_TERMINAL_INFO    1u
-#define BSP_LOG_TERMINAL_WARNING 2u
-#define BSP_LOG_TERMINAL_ERROR      3u
-#define BSP_LOG_TERMINAL_MOUDULS    4u
-#define BSP_LOG_TERMINAL_TASK       5u
-#define BSP_LOG_TERMINAL_BSP        6u
-#define BSP_LOG_TERMINAL_ARITHMETIC 7u
-#define BSP_LOG_TERMINAL_APP        8u
-#define BSP_LOG_TERMINAL_CALUATE    9u
+BSPLogSetLevel(BSP_LOG_LEVEL_DEBUG);
 ```
 
-Terminal 0 到 9 都属于 RTT 通道 0 内的虚拟终端，不是十个独立的 RTT 通道。`BSPLogSelectTerminal()` 可改变 RTT 当前活动 Terminal：
+低于全局等级的日志在格式化前直接返回 `PENDING`，不会执行格式化或写入 RTT。这是正常的过滤结果，不会更新当前任务的最后错误。这里的 `PENDING` 表示本次日志跳过，不会加入队列或稍后补发。
 
 ```c
-if (BSPLogSelectTerminal(BSP_LOG_TERMINAL_INFO) < 0) {
-  // Terminal 编号无效或 RTT 缓冲区空间不足
+err_t result =
+    BSPLogWrite(BSP_LOG_LEVEL_DEBUG, "motor", "speed=%d", speed);
+if (result == PENDING) {
+  // 日志被当前等级正常过滤
 }
 ```
 
-日志宏和 `BSPLogPrintfTerminal()` 会明确指定目标 Terminal。`BSPLogPrintfTerminal()` 完成写入后，SEGGER RTT 会恢复调用前的活动 Terminal，因此多个任务使用不同日志级别时不会因为活动 Terminal 被永久改变而串到其他终端。
-
-在 RTT Viewer 或其他 RTT 客户端中，应连接通道 0，并按需要查看虚拟 Terminal 0、1、2、3。实际能否看到日志还取决于调试器已连接目标芯片并运行了支持 RTT 的调试会话。
-
-## 浮点数转字符串
-
-`Float2StrN()` 将 `float` 转换为固定三位小数的十进制字符串，并进行四舍五入：
+## 输出接口
 
 ```c
-char text[32];
-int length = Float2StrN(text, sizeof(text), -12.3456f);
-// text: "-12.346"
-// length: 7
+err_t BSPLogWrite(bsp_log_level_t level,
+                  const char *tag,
+                  const char *format,
+                  ...);
+
+err_t BSPLogVWrite(bsp_log_level_t level,
+                   const char *tag,
+                   const char *format,
+                   va_list args);
 ```
 
-`size` 包含结尾的 `\0`。即使目标缓冲区太小，函数也会尽量写入截断后的、以 `\0` 结尾的字符串，并返回完整结果长度；因此返回值大于等于 `size` 表示发生了截断。
+示例：
 
-以下情况返回 `-1`，并在目标缓冲区可用时写入空字符串：
+```c
+LOG_INFO("motor", "speed=%d", speed);
+LOG_ERROR("can", "send failed: %d", status);
+```
 
-- `str == NULL`；
-- `size == 0`；
-- 输入是 NaN 或无穷大；
-- 缩放到千分位后超出内部 `int64_t` 表示范围。
+输出格式为：
 
-该函数不依赖 `BSP_LOG_ENABLED`，可用于 RTT 日志之外的字符串格式化场景。
+```text
+[INFO][motor] speed=1200\r\n
+[ERROR][can] send failed: -15\r\n
+```
 
-## 相关接口
+`tag` 和 `format` 不能为 `NULL`，否则返回 `PTR_NULL`。允许使用空字符串 tag。
 
-| 接口                     | 作用                                   |
-| ------------------------ | -------------------------------------- |
-| `BSPLogInit()`           | 初始化 RTT 和日志互斥锁                |
-| `BSPLogGetLastError()`   | 获取最近一次初始化或 Terminal 选择错误 |
-| `BSPLogSelectTerminal()` | 设置 RTT 通道 0 的活动虚拟 Terminal    |
-| `BSPLogPrintfTerminal()` | 格式化并写入指定虚拟 Terminal          |
-| `Float2StrN()`           | 将 `float` 转换为固定三位小数字符串    |
+## 返回状态
 
-以上接口和宏均声明在 `bsp/log/bsp_log.h` 中。
+日志接口直接复用 `component/comp_cmd.h` 中的公共 `err_t`，不再定义日志专用错误枚举或旧名称别名。实际使用的状态如下：
+
+| 状态 | 数值 | 日志接口中的含义 |
+| --- | --- | --- |
+| `PENDING` | 1 | 等级过滤，正常跳过，不更新最后错误 |
+| `OK` | 0 | 操作成功；写日志时表示整条记录已写入 RTT |
+| `FAILED` | -1 | `snprintf/vsnprintf` 返回负值，格式化失败 |
+| `INIT_ERR` | -2 | 尚未初始化，或 RTT 通道配置失败 |
+| `ARG_ERR` | -3 | 日志等级非法 |
+| `STATE_ERR` | -4 | 初始化或输出的调用上下文非法 |
+| `SIZE_ERR` | -5 | 标签或正文过长，整条日志不提交 |
+| `NOT_SUPPORT` | -7 | 编译时关闭日志后，直接调用初始化、输出或清屏接口 |
+| `NO_BUFF` | -11 | RTT 空间不足，整条记录未写入 |
+| `PTR_NULL` | -16 | 标签、格式串或等级输出指针为空 |
+
+RTT 写入不等待，因此不会返回 `TIMEOUT`。日志关闭时 `LOG_*` 宏仍为 `((void)0)`，不求值参数；等级设置、等级查询和最后错误查询接口仍可使用。
+
+## 并发规则
+
+每次调用使用独立的 512 字节栈缓冲区，先完成标签、正文和 `\r\n` 的格式化，再调用一次 `SEGGER_RTT_Write()` 提交整条记录。RTT 内置的 `SEGGER_RTT_LOCK/UNLOCK` 负责保护环形缓冲区；日志层不加锁，也不在关闭中断的临界区内执行 `snprintf/vsnprintf`。
+
+通道 0 使用 `NO_BLOCK_SKIP`：空间足够时整条写入，不足时整条跳过并返回 `NO_BUFF`，不等待主机读取。请勿在初始化后将该通道改成阻塞或截断模式。清屏也通过一次 RTT 写入提交。
+
+512 字节容量包括前缀、正文、两字节换行及字符串结束符，最多提交 511 字节。超长标签或正文返回 `SIZE_ERR`，不产生半条日志。`vsnprintf` 保留标准格式化及浮点支持。
+
+独立行缓冲区会占用调用任务的栈；栈预算还必须包括 libc 浮点格式化及其调用链。DR16 任务保留 2048 字节栈；其他只有 512 字节栈的任务如需使用格式化日志，应先增加栈并测量运行时余量。日志层不分配堆内存，但 newlib 浮点格式化本身可能分配内存。
+
+为支持并发 `vsnprintf`（尤其是 `%f`），`FreeRTOSConfig.h` 启用 `configUSE_NEWLIB_REENTRANT=1`，由内核为每个任务维护独立的 newlib 状态，增加每个任务 TCB 的内存开销。`sysmem.c` 提供 `__malloc_lock/unlock`，只在 newlib 分配/释放内存期间嵌套挂起调度器，不使用 mutex，不关闭中断，也不包住整个格式化过程。newlib 堆接口仅用于线程上下文。
+
+普通任务和调度器启动前可以调用格式化日志。ISR、关闭中断、使用 `BASEPRI` 的临界区以及调度器挂起期间调用会返回 `STATE_ERR`。
+
+`NO_THREAD_SAFE_PROMISE` 是接口注解，只标记必须由调用者保证单线程调用的初始化接口。日志写入和等级读写支持并发。RTT 锁范围内没有格式化操作；本项目 Cortex-M4 的 RTT 默认锁使用 `BASEPRI=0x20` 屏蔽相关中断及任务切换。
+
+## 每任务错误状态
+
+FreeRTOS 配置中的 `configNUM_THREAD_LOCAL_STORAGE_POINTERS` 设为 1，槽位 0 专供日志库保存当前任务的最后错误。任务 A 和任务 B 的错误状态互不覆盖：
+
+```c
+err_t result = LOG_ERROR("motor", "failed");
+if (result < 0 && BSPLogGetLastError() != OK) {
+  // 只读取当前任务的错误状态
+}
+```
+
+规则如下：
+
+- `PENDING` 不更新错误状态。
+- 初始化、写入、清屏和设置等级返回 `OK` 时清除当前任务错误；成功查询等级或最后错误不改变错误状态。
+- 其他失败状态写入当前任务 TLS。
+- 调度器启动前使用独立的启动阶段错误状态。
+- ISR 不读写任务 TLS。
+
+## 清屏和工具接口
+
+```c
+err_t BSPLogClear(void);
+err_t BSPLogSetLevel(bsp_log_level_t level);
+err_t BSPLogGetLevel(bsp_log_level_t *level);
+err_t BSPLogGetLastError(void);
+```
+
+日志库不包含 `SEGGER_RTT_Read()` 命令轮询、动态命令解析、模块枚举或 Flash 持久化配置。等级配置只通过 `BSPLogSetLevel()` 在运行时设置，重启后恢复默认值。
+
+`Float2StrN()` 仍然是独立的浮点字符串工具，不参与日志等级、并发锁或错误状态。其返回值表示字符长度，因此保留 `int` 类型：失败返回 -1，成功返回完整结果所需字符数，不含结束符；返回值大于等于容量表示发生截断。
+
+内部使用 `round()` 将数值量化到 0.001，再由整数格式的 `snprintf()` 输出，复用标准库的数字转换、长度计算和截断处理。半整数向远离零的方向取整，负零和取整后为零的小负数输出 `0.000`；NaN、无穷大以及量化后超出 `[-2^63, 2^63)` 的数值返回 -1。调用上下文需满足 libc 的可重入要求。
+
+项目使用的 newlib-nano 未启用 `long long` 格式支持，因此整数部分按十亿拆分为两个 32 位段，使用 `PRIu32` 输出，兼容大数值且无需手工逐位转换。

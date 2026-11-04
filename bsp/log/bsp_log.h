@@ -3,146 +3,77 @@
 
 #include <stdarg.h>
 #include <stddef.h>
-#include <stdio.h>
+#include <stdint.h>
 
 #include "SEGGER_RTT.h"
 #include "SEGGER_RTT_Conf.h"
+#include "comp_cmd.h"
+
+#ifndef BSP_LOG_ENABLED
+#define BSP_LOG_ENABLED 0
+#endif
 
 #define BSP_LOG_CHANNEL_TERMINAL 0u
+#define BSP_LOG_CHANNEL_DATA 1u
+#define BSP_LOG_CHANNEL_RESERVED 2u
+#define BSP_LOG_LINE_BUFFER_SIZE 512u
+#define BSP_LOG_DATA_BUFFER_SIZE 1024u
+#define BSP_LOG_RESERVED_BUFFER_SIZE 256u
+#define BSP_LOG_DEFAULT_LEVEL BSP_LOG_LEVEL_INFO
+#define BSP_LOG_IPSR_THREAD_MODE 0U
+#define BSP_LOG_PRIMASK_UNMASKED 0U
+#define BSP_LOG_BASEPRI_UNMASKED 0U
 
-/* Virtual terminals are multiplexed inside RTT channel 0. */
-#define BSP_LOG_TERMINAL_DEFAULT 0u
-#define BSP_LOG_TERMINAL_INFO 1u
-#define BSP_LOG_TERMINAL_WARNING 2u
-#define BSP_LOG_TERMINAL_ERROR 3u
-#define BSP_LOG_TERMINAL_MOUDULS 4u
-#define BSP_LOG_TERMINAL_TASK 5u
-#define BSP_LOG_TERMINAL_BSP 6u
-#define BSP_LOG_TERMINAL_ARITHMETIC 7u
-#define BSP_LOG_TERMINAL_APP 8u
-#define BSP_LOG_TERMINAL_CALUATE 9u
+typedef enum {
+  BSP_LOG_LEVEL_TRACE = 0,
+  BSP_LOG_LEVEL_DEBUG,
+  BSP_LOG_LEVEL_INFO,
+  BSP_LOG_LEVEL_WARN,
+  BSP_LOG_LEVEL_ERROR,
+  BSP_LOG_LEVEL_FATAL,
+  BSP_LOG_LEVEL_COUNT
+} bsp_log_level_t;
 
-/**
- * @brief 初始化 RTT 日志系统和默认上行通道。
- * @note 启动阶段、调度器启动前调用；内部使用静态分配的互斥锁。
- * @return 0 表示成功，负值表示某个通道或终端配置失败。
- */
-int BSPLogInit(void);
-
-/**
- * @brief 获取最近一次初始化或终端选择操作的错误码。
- */
-int BSPLogGetLastError(void);
-
-/**
- * @brief 选择通道 0 内的 RTT 虚拟终端，终端编号范围由 SEGGER RTT 实现定义。
- */
-int BSPLogSelectTerminal(unsigned char terminal_id);
-
-/**
- * @brief 将一条格式化日志原子地写入指定 RTT 虚拟终端。
- * @note BSPLogInit() 后可在启动阶段或任务中调用。共享静态行缓冲区由互斥锁
- *       保护；任务竞争时会等待。不支持 ISR、关中断/临界区或调度器挂起期间调用。
- *       vsnprintf()（尤其浮点格式化）的调用栈仍需由任务栈承担。
- * @return SEGGER_RTT_TerminalOut() 的返回值，失败返回负值。
- */
-int BSPLogPrintfTerminal(unsigned char terminal_id, const char* type,
-                         const char* color, const char* format, ...);
-
-/**
- * @brief 日志功能原型，供各类日志宏使用。
- */
-#if BSP_LOG_ENABLED
-#define LOG_PROTO(terminal, type, color, format, ...) \
-  BSPLogPrintfTerminal((terminal), (type), (color), (format), ##__VA_ARGS__)
-#else
-#define LOG_PROTO(terminal, type, color, format, ...) \
-  do {                                                \
-    (void)sizeof(terminal);                           \
-    (void)sizeof(type);                               \
-    (void)sizeof(color);                              \
-    (void)sizeof(format);                             \
-  } while (0)
+#ifndef NO_THREAD_SAFE_PROMISE
+#define NO_THREAD_SAFE_PROMISE
 #endif
 
-/*----------------------------------------日志输出接口-------------------------------------------------*/
+/* 仅在调度器启动前由单线程初始化；成功后重复调用不会清空 RTT。 */
+NO_THREAD_SAFE_PROMISE err_t BSPLogInit(void);
+
+/* 独立栈缓冲区格式化，RTT 内置锁提交；等级过滤返回 PENDING，不排队。 */
+err_t BSPLogWrite(bsp_log_level_t level, const char* tag,
+                  const char* format, ...);
+err_t BSPLogVWrite(bsp_log_level_t level, const char* tag,
+                   const char* format, va_list args);
+
+err_t BSPLogSetLevel(bsp_log_level_t level);
+err_t BSPLogGetLevel(bsp_log_level_t* level);
+err_t BSPLogGetLastError(void);
+err_t BSPLogClear(void);
 
 #if BSP_LOG_ENABLED
-#define LOG_CLEAR() \
-  SEGGER_RTT_TerminalOut(BSP_LOG_TERMINAL_DEFAULT, "  " RTT_CTRL_CLEAR)
-#define LOG(format, ...) \
-  LOG_PROTO(BSP_LOG_TERMINAL_DEFAULT, "", "", format, ##__VA_ARGS__)
-#define LOGINFO(format, ...)                                         \
-  LOG_PROTO(BSP_LOG_TERMINAL_INFO, "I:", RTT_CTRL_TEXT_BRIGHT_GREEN, \
-            format, ##__VA_ARGS__)
-#define LOGWARNING(format, ...)                                          \
-  LOG_PROTO(BSP_LOG_TERMINAL_WARNING, "W:", RTT_CTRL_TEXT_BRIGHT_YELLOW, \
-            format, ##__VA_ARGS__)
-#define LOGERROR(format, ...)                                       \
-  LOG_PROTO(BSP_LOG_TERMINAL_ERROR, "E:", RTT_CTRL_TEXT_BRIGHT_RED, \
-            format, ##__VA_ARGS__)
-#define LOGMOUDULS(format, ...)                                      \
-  LOG_PROTO(BSP_LOG_TERMINAL_MOUDULS, "M:", RTT_CTRL_TEXT_BRIGHT_BLUE, \
-            format, ##__VA_ARGS__)
-#define LOGTASK(format, ...)                                         \
-  LOG_PROTO(BSP_LOG_TERMINAL_TASK, "T:", RTT_CTRL_TEXT_BRIGHT_MAGENTA, \
-            format, ##__VA_ARGS__)
-#define LOGBSP(format, ...)                                          \
-  LOG_PROTO(BSP_LOG_TERMINAL_BSP, "B:", RTT_CTRL_TEXT_BRIGHT_CYAN, \
-            format, ##__VA_ARGS__)
-#define LOGARITHMETIC(format, ...)                                   \
-  LOG_PROTO(BSP_LOG_TERMINAL_ARITHMETIC, "A:", RTT_CTRL_TEXT_BRIGHT_WHITE, \
-            format, ##__VA_ARGS__)
-#define LOGAPP(format, ...)                                          \
-  LOG_PROTO(BSP_LOG_TERMINAL_APP, "P:", RTT_CTRL_TEXT_BLUE, \
-            format, ##__VA_ARGS__)
-#define LOGCALUATE(format, ...)                                      \
-  LOG_PROTO(BSP_LOG_TERMINAL_CALUATE, "C:", RTT_CTRL_TEXT_MAGENTA, \
-            format, ##__VA_ARGS__)
+#define LOG_TRACE(tag, format, ...) \
+  BSPLogWrite(BSP_LOG_LEVEL_TRACE, (tag), (format), ##__VA_ARGS__)
+#define LOG_DEBUG(tag, format, ...) \
+  BSPLogWrite(BSP_LOG_LEVEL_DEBUG, (tag), (format), ##__VA_ARGS__)
+#define LOG_INFO(tag, format, ...) \
+  BSPLogWrite(BSP_LOG_LEVEL_INFO, (tag), (format), ##__VA_ARGS__)
+#define LOG_WARN(tag, format, ...) \
+  BSPLogWrite(BSP_LOG_LEVEL_WARN, (tag), (format), ##__VA_ARGS__)
+#define LOG_ERROR(tag, format, ...) \
+  BSPLogWrite(BSP_LOG_LEVEL_ERROR, (tag), (format), ##__VA_ARGS__)
+#define LOG_FATAL(tag, format, ...) \
+  BSPLogWrite(BSP_LOG_LEVEL_FATAL, (tag), (format), ##__VA_ARGS__)
 #else
-#define LOG_CLEAR() \
-  do {              \
-  } while (0)
-#define LOG(format, ...) \
-  do {                   \
-  } while (0)
-#define LOGINFO(format, ...) \
-  do {                       \
-  } while (0)
-#define LOGWARNING(format, ...) \
-  do {                          \
-  } while (0)
-#define LOGERROR(format, ...) \
-  do {                        \
-  } while (0)
-#define LOGMOUDULS(format, ...) \
-  do {                         \
-  } while (0)
-#define LOGTASK(format, ...) \
-  do {                      \
-  } while (0)
-#define LOGBSP(format, ...) \
-  do {                     \
-  } while (0)
-#define LOGARITHMETIC(format, ...) \
-  do {                              \
-  } while (0)
-#define LOGAPP(format, ...) \
-  do {                     \
-  } while (0)
-#define LOGCALUATE(format, ...) \
-  do {                         \
-  } while (0)
+#define LOG_TRACE(tag, format, ...) ((void)0)
+#define LOG_DEBUG(tag, format, ...) ((void)0)
+#define LOG_INFO(tag, format, ...) ((void)0)
+#define LOG_WARN(tag, format, ...) ((void)0)
+#define LOG_ERROR(tag, format, ...) ((void)0)
+#define LOG_FATAL(tag, format, ...) ((void)0)
 #endif
 
-/**
- * @brief 将 float 转换为固定 3 位小数的字符串，并检查目标缓冲区大小。
- * @param str 目标字符串缓冲区。
- * @param size 目标缓冲区大小，包含结尾的 '\0'。
- * @param va 要转换的浮点数。
- * @return 不包含 '\0' 的完整字符串长度；参数无效或数值超出支持范围时返回 -1。
- *         返回值大于等于 size 时表示输出被截断。
- */
 int Float2StrN(char* str, size_t size, float va);
 
 #endif
