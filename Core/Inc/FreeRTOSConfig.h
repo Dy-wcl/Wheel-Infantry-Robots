@@ -179,6 +179,10 @@ standard names. */
 
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
+/* TLS slot 0 is reserved for the bsp_log task-local error state. */
+#define configNUM_THREAD_LOCAL_STORAGE_POINTERS 1
+/* vsnprintf float conversion keeps state in newlib's per-task _reent. */
+#define configUSE_NEWLIB_REENTRANT 1
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */

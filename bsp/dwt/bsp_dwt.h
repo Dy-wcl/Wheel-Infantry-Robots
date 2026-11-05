@@ -2,7 +2,7 @@
 
 #include "main.h"
 #include "stdint.h"
-// #include "bsp_log.h"
+#include "bsp_log.h"
 
 // ==================== DWT 时间类型 ====================
 
@@ -23,7 +23,7 @@ typedef struct {
     float tstart = DWT_GetTimeline_s();      \
     code;                                    \
     dt = DWT_GetTimeline_s() - tstart;       \
-    LOGINFO("[DWT] " #dt " = %f s\r\n", dt); \
+    (void)LOG_INFO("DWT", #dt " = %f s", dt); \
   } while (0)
 
 // ==================== DWT 公开接口 ====================

@@ -25,6 +25,33 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#if !defined(__PICOLIBC__)
+#include <sys/reent.h>
+#include "FreeRTOS.h"
+#include "task.h"
+
+/* newlib float formatting can allocate memory. Protect only its allocator,
+ * without a mutex or an interrupt-masked formatting critical section.
+ * Like malloc itself, these hooks are for thread context only. */
+void __malloc_lock(struct _reent *reent)
+{
+  (void)reent;
+  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
+  {
+    vTaskSuspendAll();
+  }
+}
+
+void __malloc_unlock(struct _reent *reent)
+{
+  (void)reent;
+  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
+  {
+    (void)xTaskResumeAll();
+  }
+}
+#endif
+
 /**
  * Pointer to the current high watermark of the heap usage
  */

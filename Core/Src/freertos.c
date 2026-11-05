@@ -58,8 +58,8 @@ const osThreadAttr_t defaultTask_attributes = {
 osThreadId_t dr16Handle;
 const osThreadAttr_t dr16_attributes = {
     .name = "dr16",
-    /* Keep room for libc floating-point formatting and its callees even
-     * though BSPLogPrintfTerminal() now uses a static line buffer. */
+    /* Keep room for bsp_log's private 512-byte line buffer and libc
+     * floating-point formatting and its callees. */
     .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityHigh,
 };

@@ -31,6 +31,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "bsp_dwt.h"
+#include "bsp_log.h"
 #include "can_device.h"
 /* USER CODE END Includes */
 
@@ -111,6 +112,7 @@ int main(void) {
   /* USER CODE BEGIN 2 */
   can_device_Init();
   DWT_Init(168);
+  (void)BSPLogInit();
   /* USER CODE END 2 */
 
   /* Init scheduler */
