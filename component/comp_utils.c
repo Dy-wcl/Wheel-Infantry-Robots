@@ -73,7 +73,7 @@ inline void clampf(float *origin, float lo, float hi) {
 /**
  * @brief 符号函数
  *
- * @param in 输入
+ * @param x 输入
  * @return float 运算结果
  */
 inline float signf(float x) {
@@ -140,7 +140,7 @@ inline void circle_reverse(float *origin) { *origin = -(*origin) + M_2PI; }
  * @param file 文件名
  * @param line 行号
  */
-void verify_failed(const char* file, uint32_t line) {
+void verify_failed(const char *file, uint32_t line) {
 #if BSP_LOG_ENABLED
   (void)LOG_ERROR("verify", "verify_failed at %s:%lu", file,
                   (unsigned long)line);

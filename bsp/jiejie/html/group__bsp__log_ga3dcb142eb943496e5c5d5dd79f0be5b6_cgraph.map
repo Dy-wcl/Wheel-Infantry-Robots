@@ -1,0 +1,5 @@
+<map id="BSPLogWrite" name="BSPLogWrite">
+<area shape="rect" id="Node000001" title="按指定等级格式化并提交带标签的日志记录。" alt="" coords="5,5,105,32"/>
+<area shape="rect" id="Node000002" href="$group__bsp__log.html#ga89d112353a5694652830c5f2e82b91ce" title="使用已有参数列表格式化并提交带标签的日志记录。" alt="" coords="153,5,261,32"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,16,140,18,135,19,105,21"/>
+</map>

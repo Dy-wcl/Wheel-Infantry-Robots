@@ -1,0 +1,35 @@
+var bsp__log_8h =
+[
+    [ "BSP_LOG_BASEPRI_UNMASKED", "group__bsp__log.html#gaa8ee327810e4ecb66be3025c0d29da61", null ],
+    [ "BSP_LOG_CHANNEL_COMMAND", "group__bsp__log.html#ga3d637375638a05532b7c96b6a4e8473a", null ],
+    [ "BSP_LOG_CHANNEL_DATA", "group__bsp__log.html#ga4d215e3008a190d0bdef3f421ccacfcf", null ],
+    [ "BSP_LOG_CHANNEL_RESERVED", "group__bsp__log.html#ga783fc836c52da73c836213d58938e5ad", null ],
+    [ "BSP_LOG_CHANNEL_TERMINAL", "group__bsp__log.html#gae98bf98bc309a9b92615da3359d8e2c7", null ],
+    [ "BSP_LOG_COMMAND_BUFFER_SIZE", "group__bsp__log.html#ga79405596869c1eec446247f848113bd9", null ],
+    [ "BSP_LOG_DATA_BUFFER_SIZE", "group__bsp__log.html#ga39aebeddb91c252dd9a5f5ee653d1039", null ],
+    [ "BSP_LOG_DEFAULT_LEVEL", "group__bsp__log.html#ga8d908a4fb5bb5dd6b46418c2179ebc68", null ],
+    [ "BSP_LOG_ENABLED", "group__bsp__log.html#ga789a618795c6ca85f4e228a5419cec08", null ],
+    [ "BSP_LOG_IPSR_THREAD_MODE", "group__bsp__log.html#gab9ad21beb329dc35c12cabc295047af9", null ],
+    [ "BSP_LOG_LINE_BUFFER_SIZE", "group__bsp__log.html#ga734162795be0ce929d65f8eac366f997", null ],
+    [ "BSP_LOG_PRIMASK_UNMASKED", "group__bsp__log.html#ga0fe0963cbd6c6e7526d739cb40bc90bb", null ],
+    [ "BSP_LOG_RESERVED_BUFFER_SIZE", "group__bsp__log.html#ga8262f1b6ff4d033321ce57b9dbe3aa5f", null ],
+    [ "NO_THREAD_SAFE_PROMISE", "group__bsp__log.html#gaa54832e66f9356cb6abd44a98479dbf6", null ],
+    [ "bsp_log_level_t", "group__bsp__log.html#gab8cf237ccbf0e84a374c75be30ab2045", [
+      [ "BSP_LOG_LEVEL_TRACE", "group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045aec2c24e30416f9986988640ceadea528", null ],
+      [ "BSP_LOG_LEVEL_DEBUG", "group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045ad7e338c14ea8186eca8d8202eb8edb7a", null ],
+      [ "BSP_LOG_LEVEL_INFO", "group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045ae90f7e016759efc4a9a7ba1c5907ced5", null ],
+      [ "BSP_LOG_LEVEL_WARN", "group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045a4c15a73bf32b8828728d86850cf0875d", null ],
+      [ "BSP_LOG_LEVEL_ERROR", "group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045a0e08db53877e020ee71dff432eacfc90", null ],
+      [ "BSP_LOG_LEVEL_FATAL", "group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045ad42ce2c2a6c63bb5529113bc0ce29d3d", null ],
+      [ "BSP_LOG_LEVEL_COUNT", "group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045a4ac508b49f030df8492d330234e6db9b", null ]
+    ] ],
+    [ "BSPLogClear", "group__bsp__log.html#ga387f170bcb7cb64383a69c877eb29af7", null ],
+    [ "BSPLogGetLastError", "group__bsp__log.html#ga10046a12de152e4237027fc3b52a13d8", null ],
+    [ "BSPLogGetLevel", "group__bsp__log.html#ga53595ca0d680bf757bf17a50c13b5c26", null ],
+    [ "BSPLogInit", "group__bsp__log.html#ga066488cf2dd06fe00afebce86ef15a3c", null ],
+    [ "BSPLogPollLevelCommand", "group__bsp__log.html#ga05a169d4e46e9bdcfee71a8f97eed265", null ],
+    [ "BSPLogSetLevel", "group__bsp__log.html#gaa83f7b624f3c1935147a0c27b6a0eca7", null ],
+    [ "BSPLogVWrite", "group__bsp__log.html#ga89d112353a5694652830c5f2e82b91ce", null ],
+    [ "BSPLogWrite", "group__bsp__log.html#ga3dcb142eb943496e5c5d5dd79f0be5b6", null ],
+    [ "Float2StrN", "group__bsp__log.html#ga0b863622b6bc986893617c85b16f6d2e", null ]
+];

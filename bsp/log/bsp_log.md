@@ -132,7 +132,7 @@ err_t BSPLogGetLevel(bsp_log_level_t *level);
 err_t BSPLogGetLastError(void);
 ```
 
-日志库不包含 `SEGGER_RTT_Read()` 命令轮询、动态命令解析、模块枚举或 Flash 持久化配置。等级配置只通过 `BSPLogSetLevel()` 在运行时设置，重启后恢复默认值。
+日志库通过 `BSPLogPollLevelCommand()` 轮询 RTT 下行通道 0，读取上位机发送的数据并调用 `BSPLogSetLevel()`。上位机脚本可以直接发送数值字节 `0`~`5`，也可以发送以换行结尾的 `TRACE`、`DEBUG`、`INFO`、`WARN`、`ERROR`、`FATAL`，以及 `level=debug`、`level debug`、`log level debug` 和 `log_level=debug`。文本命令不区分大小写，CR/LF 均可作为结束符；半条命令会等待下一次轮询，超长命令会丢弃到下一个结束符。默认任务每 10 ms 调用一次轮询接口。等级仅保存在 RAM，重启后恢复默认值。
 
 `Float2StrN()` 仍然是独立的浮点字符串工具，不参与日志等级、并发锁或错误状态。其返回值表示字符长度，因此保留 `int` 类型：失败返回 -1，成功返回完整结果所需字符数，不含结束符；返回值大于等于容量表示发生截断。
 

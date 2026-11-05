@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.17.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>My Project: bsp/log/bsp_log.h 文件参考</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="codefolding.js"></script>
+<script type="text/javascript" src="clipboard.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
+mermaid.initialize({ startOnLoad: true, theme: theme });
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectalign">
+   <div id="projectname">My Project<span id="projectnumber">&#160;1.0.1</span>
+   </div>
+   <div id="projectbrief">log日志库</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.17.0 -->
+<script type="text/javascript">
+let searchBox = new SearchBox("searchBox", "search/",'.html');
+</script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', codefold.init);
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', () => {
+  initMenu('',true);
+  init_search();
+});
+</script>
+<div id="main-nav-mobile">
+<div class="sm sm-dox"><input id="main-menu-state" type="checkbox"/>
+<label class="main-menu-btn" for="main-menu-state">
+<span class="main-menu-btn-icon"></span> Toggle main menu visibility</label>
+<span id="searchBoxPos1" style="position:absolute;right:8px;top:8px;height:36px;"></span>
+</div>
+</div><!-- main-nav-mobile -->
+<div id="main-nav">
+  <ul class="sm sm-dox" id="main-menu">
+    <li id="searchBoxPos2" style="float:right">
+        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="搜索" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+    </li>
+  </ul>
+</div><!-- main-nav -->
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded',() => { initNavTree('bsp__log_8h.html','',''); });
+</script>
+<div id="container">
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">载入中...</div>
+<div class="SRStatus" id="Searching">搜索中...</div>
+<div class="SRStatus" id="NoMatches">未找到</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="headertitle"><div class="title">bsp_log.h 文件参考</div></div>
+</div><!--header-->
+<div class="contents">
+
+<p>声明 RTT 分级日志接口和有限浮点数转换接口。  
+<a href="#details">更多...</a></p>
+<div class="textblock"><code>#include &lt;stdarg.h&gt;</code><br />
+<code>#include &lt;stddef.h&gt;</code><br />
+<code>#include &lt;stdint.h&gt;</code><br />
+<code>#include &quot;SEGGER_RTT.h&quot;</code><br />
+<code>#include &quot;SEGGER_RTT_Conf.h&quot;</code><br />
+<code>#include &quot;comp_cmd.h&quot;</code><br />
+</div><div class="textblock"><div class="dynheader">
+bsp_log.h 的引用(Include)关系图:</div>
+<div class="dyncontent">
+<div class="center"><img src="bsp__log_8h__incl.png" border="0" usemap="#absp_2log_2bsp__log_8h" loading="lazy" alt=""/></div>
+<map name="absp_2log_2bsp__log_8h" id="absp_2log_2bsp__log_8h">
+<area shape="rect" title="声明 RTT 分级日志接口和有限浮点数转换接口。" alt="" coords="218,5,341,32"/>
+<area shape="rect" title=" " alt="" coords="5,80,74,107"/>
+<area shape="poly" title=" " alt="" coords="238,35,90,80,88,75,237,30"/>
+<area shape="rect" title=" " alt="" coords="97,80,166,107"/>
+<area shape="poly" title=" " alt="" coords="256,32,172,75,170,70,251,33"/>
+<area shape="rect" title=" " alt="" coords="190,80,254,107"/>
+<area shape="poly" title=" " alt="" coords="272,31,243,70,240,66,267,34"/>
+<area shape="rect" title=" " alt="" coords="278,80,398,107"/>
+<area shape="poly" title=" " alt="" coords="291,30,321,68,316,67,289,35"/>
+<area shape="rect" title=" " alt="" coords="423,80,579,107"/>
+<area shape="poly" title=" " alt="" coords="318,30,450,74,445,75,318,35"/>
+<area shape="rect" title=" " alt="" coords="603,80,700,107"/>
+<area shape="poly" title=" " alt="" coords="342,29,591,78,586,80,341,34"/>
+</map>
+</div>
+</div><div class="textblock"><div class="dynheader">
+此图展示该文件被哪些文件直接或间接地引用了:</div>
+<div class="dyncontent">
+<div class="center"><img src="bsp__log_8h__dep__incl.png" border="0" usemap="#absp_2log_2bsp__log_8hdep" loading="lazy" alt=""/></div>
+<map name="absp_2log_2bsp__log_8hdep" id="absp_2log_2bsp__log_8hdep">
+<area shape="rect" title="声明 RTT 分级日志接口和有限浮点数转换接口。" alt="" coords="5,5,129,32"/>
+<area shape="rect" href="bsp__log_8c_source.html" title=" " alt="" coords="5,80,129,107"/>
+<area shape="poly" title=" " alt="" coords="69,46,70,80,64,79,65,50"/>
+</map>
+</div>
+</div>
+<p><a href="bsp__log_8h_source.html">浏览该文件的源代码.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
+宏定义</h2></td></tr>
+<tr class="memitem:ga789a618795c6ca85f4e228a5419cec08" id="r_ga789a618795c6ca85f4e228a5419cec08"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga789a618795c6ca85f4e228a5419cec08">BSP_LOG_ENABLED</a>&#160;&#160;&#160;0</td></tr>
+<tr class="memitem:gae98bf98bc309a9b92615da3359d8e2c7" id="r_gae98bf98bc309a9b92615da3359d8e2c7"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#gae98bf98bc309a9b92615da3359d8e2c7">BSP_LOG_CHANNEL_TERMINAL</a>&#160;&#160;&#160;0u</td></tr>
+<tr class="memitem:ga4d215e3008a190d0bdef3f421ccacfcf" id="r_ga4d215e3008a190d0bdef3f421ccacfcf"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga4d215e3008a190d0bdef3f421ccacfcf">BSP_LOG_CHANNEL_DATA</a>&#160;&#160;&#160;1u</td></tr>
+<tr class="memitem:ga783fc836c52da73c836213d58938e5ad" id="r_ga783fc836c52da73c836213d58938e5ad"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga783fc836c52da73c836213d58938e5ad">BSP_LOG_CHANNEL_RESERVED</a>&#160;&#160;&#160;2u</td></tr>
+<tr class="memitem:ga3d637375638a05532b7c96b6a4e8473a" id="r_ga3d637375638a05532b7c96b6a4e8473a"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga3d637375638a05532b7c96b6a4e8473a">BSP_LOG_CHANNEL_COMMAND</a>&#160;&#160;&#160;0u</td></tr>
+<tr class="memitem:ga79405596869c1eec446247f848113bd9" id="r_ga79405596869c1eec446247f848113bd9"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga79405596869c1eec446247f848113bd9">BSP_LOG_COMMAND_BUFFER_SIZE</a>&#160;&#160;&#160;32u</td></tr>
+<tr class="memitem:ga734162795be0ce929d65f8eac366f997" id="r_ga734162795be0ce929d65f8eac366f997"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga734162795be0ce929d65f8eac366f997">BSP_LOG_LINE_BUFFER_SIZE</a>&#160;&#160;&#160;512u</td></tr>
+<tr class="memitem:ga39aebeddb91c252dd9a5f5ee653d1039" id="r_ga39aebeddb91c252dd9a5f5ee653d1039"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga39aebeddb91c252dd9a5f5ee653d1039">BSP_LOG_DATA_BUFFER_SIZE</a>&#160;&#160;&#160;1024u</td></tr>
+<tr class="memitem:ga8262f1b6ff4d033321ce57b9dbe3aa5f" id="r_ga8262f1b6ff4d033321ce57b9dbe3aa5f"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga8262f1b6ff4d033321ce57b9dbe3aa5f">BSP_LOG_RESERVED_BUFFER_SIZE</a>&#160;&#160;&#160;256u</td></tr>
+<tr class="memitem:ga8d908a4fb5bb5dd6b46418c2179ebc68" id="r_ga8d908a4fb5bb5dd6b46418c2179ebc68"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga8d908a4fb5bb5dd6b46418c2179ebc68">BSP_LOG_DEFAULT_LEVEL</a>&#160;&#160;&#160;<a class="el" href="group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045ae90f7e016759efc4a9a7ba1c5907ced5">BSP_LOG_LEVEL_INFO</a></td></tr>
+<tr class="memitem:gab9ad21beb329dc35c12cabc295047af9" id="r_gab9ad21beb329dc35c12cabc295047af9"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#gab9ad21beb329dc35c12cabc295047af9">BSP_LOG_IPSR_THREAD_MODE</a>&#160;&#160;&#160;0U</td></tr>
+<tr class="memitem:ga0fe0963cbd6c6e7526d739cb40bc90bb" id="r_ga0fe0963cbd6c6e7526d739cb40bc90bb"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga0fe0963cbd6c6e7526d739cb40bc90bb">BSP_LOG_PRIMASK_UNMASKED</a>&#160;&#160;&#160;0U</td></tr>
+<tr class="memitem:gaa8ee327810e4ecb66be3025c0d29da61" id="r_gaa8ee327810e4ecb66be3025c0d29da61"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#gaa8ee327810e4ecb66be3025c0d29da61">BSP_LOG_BASEPRI_UNMASKED</a>&#160;&#160;&#160;0U</td></tr>
+<tr class="memitem:gaa54832e66f9356cb6abd44a98479dbf6" id="r_gaa54832e66f9356cb6abd44a98479dbf6"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#gaa54832e66f9356cb6abd44a98479dbf6">NO_THREAD_SAFE_PROMISE</a></td></tr>
+<tr class="memdesc:gaa54832e66f9356cb6abd44a98479dbf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">标记需要由调用方串行化的接口；除非外部定义，否则展开为空。  <br /></td></tr>
+<tr id="define-members-0" class="groupHeader"><td colspan="2"><div class="groupHeader">日志快捷宏</div></td></tr>
+<tr><td colspan="2" class="ititle"><div class="groupText"><p>使用固定等级调用 <a class="el" href="group__bsp__log.html#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。">BSPLogWrite()</a>。</p>
+<p>tag 为非 NULL、NUL 结尾的标签，允许空串；format 为非 NULL 的 printf 格式串。 两者仅在调用期间借用，可变参数须与 format 匹配。 启用时返回 <a class="el" href="group__bsp__log.html#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。">BSPLogWrite()</a> 的结果；关闭时展开为 ((void)0)。 </p><dl class="section note"><dt>注解</dt><dd>启用时每个参数求值一次，即使记录随后被等级过滤。 关闭时参数不求值，不输出日志，也不更新已保存状态。 需要始终获取返回状态时，请直接调用 <a class="el" href="group__bsp__log.html#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。">BSPLogWrite()</a>。 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>启用时遵守 <a class="el" href="group__bsp__log.html#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。">BSPLogWrite()</a> 的上下文、栈空间及格式要求。 </dd></dl>
+</div></td></tr>
+<tr class="memitem:ga1e4d8fbf5cde1810da15db1c751db468" id="r_ga1e4d8fbf5cde1810da15db1c751db468"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga1e4d8fbf5cde1810da15db1c751db468">LOG_DEBUG</a>(tag,  format, ...)</td></tr>
+<tr class="memitem:gad85c8c291e6615e4ccaea69b2e5cb97e" id="r_gad85c8c291e6615e4ccaea69b2e5cb97e"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#gad85c8c291e6615e4ccaea69b2e5cb97e">LOG_INFO</a>(tag,  format, ...)</td></tr>
+<tr class="memitem:ga84a4c23a3d72e43b7d69324cad41619d" id="r_ga84a4c23a3d72e43b7d69324cad41619d"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga84a4c23a3d72e43b7d69324cad41619d">LOG_WARN</a>(tag,  format, ...)</td></tr>
+<tr class="memitem:ga8fe5c9193457537f11eee68bc676a814" id="r_ga8fe5c9193457537f11eee68bc676a814"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga8fe5c9193457537f11eee68bc676a814">LOG_ERROR</a>(tag,  format, ...)</td></tr>
+<tr class="memitem:ga088a2e2d28abcc489a76643dc6d74dbe" id="r_ga088a2e2d28abcc489a76643dc6d74dbe"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga088a2e2d28abcc489a76643dc6d74dbe">LOG_FATAL</a>(tag,  format, ...)</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+枚举</h2></td></tr>
+<tr class="memitem:gab8cf237ccbf0e84a374c75be30ab2045" id="r_gab8cf237ccbf0e84a374c75be30ab2045"><td class="memItemLeft">enum &#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> { <br />
+&#160;&#160;<a class="el" href="group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045aec2c24e30416f9986988640ceadea528">BSP_LOG_LEVEL_TRACE</a> = 0
+, <a class="el" href="group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045ad7e338c14ea8186eca8d8202eb8edb7a">BSP_LOG_LEVEL_DEBUG</a>
+, <a class="el" href="group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045ae90f7e016759efc4a9a7ba1c5907ced5">BSP_LOG_LEVEL_INFO</a>
+, <a class="el" href="group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045a4c15a73bf32b8828728d86850cf0875d">BSP_LOG_LEVEL_WARN</a>
+, <br />
+&#160;&#160;<a class="el" href="group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045a0e08db53877e020ee71dff432eacfc90">BSP_LOG_LEVEL_ERROR</a>
+, <a class="el" href="group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045ad42ce2c2a6c63bb5529113bc0ce29d3d">BSP_LOG_LEVEL_FATAL</a>
+, <a class="el" href="group__bsp__log.html#ggab8cf237ccbf0e84a374c75be30ab2045a4ac508b49f030df8492d330234e6db9b">BSP_LOG_LEVEL_COUNT</a>
+<br />
+ }</td></tr>
+<tr class="memdesc:gab8cf237ccbf0e84a374c75be30ab2045"><td class="mdescLeft">&#160;</td><td class="mdescRight">按 TRACE（0）至 FATAL（5）排列日志记录等级。  <a href="group__bsp__log.html#gab8cf237ccbf0e84a374c75be30ab2045">更多...</a><br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:ga066488cf2dd06fe00afebce86ef15a3c" id="r_ga066488cf2dd06fe00afebce86ef15a3c"><td class="memItemLeft"><a class="el" href="group__bsp__log.html#gaa54832e66f9356cb6abd44a98479dbf6">NO_THREAD_SAFE_PROMISE</a> err_t&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga066488cf2dd06fe00afebce86ef15a3c">BSPLogInit</a> (void)</td></tr>
+<tr class="memdesc:ga066488cf2dd06fe00afebce86ef15a3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">在调度器启动前初始化 RTT 终端、数据及预留通道。  <br /></td></tr>
+<tr class="memitem:ga3dcb142eb943496e5c5d5dd79f0be5b6" id="r_ga3dcb142eb943496e5c5d5dd79f0be5b6"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga3dcb142eb943496e5c5d5dd79f0be5b6">BSPLogWrite</a> (<a class="el" href="group__bsp__log.html#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> level, const char *tag, const char *format,...)</td></tr>
+<tr class="memdesc:ga3dcb142eb943496e5c5d5dd79f0be5b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">按指定等级格式化并提交带标签的日志记录。  <br /></td></tr>
+<tr class="memitem:ga89d112353a5694652830c5f2e82b91ce" id="r_ga89d112353a5694652830c5f2e82b91ce"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga89d112353a5694652830c5f2e82b91ce">BSPLogVWrite</a> (<a class="el" href="group__bsp__log.html#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> level, const char *tag, const char *format, va_list args)</td></tr>
+<tr class="memdesc:ga89d112353a5694652830c5f2e82b91ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">使用已有参数列表格式化并提交带标签的日志记录。  <br /></td></tr>
+<tr class="memitem:gaa83f7b624f3c1935147a0c27b6a0eca7" id="r_gaa83f7b624f3c1935147a0c27b6a0eca7"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#gaa83f7b624f3c1935147a0c27b6a0eca7">BSPLogSetLevel</a> (<a class="el" href="group__bsp__log.html#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> level)</td></tr>
+<tr class="memdesc:gaa83f7b624f3c1935147a0c27b6a0eca7"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置后续日志记录使用的共享最低等级。  <br /></td></tr>
+<tr class="memitem:ga53595ca0d680bf757bf17a50c13b5c26" id="r_ga53595ca0d680bf757bf17a50c13b5c26"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga53595ca0d680bf757bf17a50c13b5c26">BSPLogGetLevel</a> (<a class="el" href="group__bsp__log.html#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> *level)</td></tr>
+<tr class="memdesc:ga53595ca0d680bf757bf17a50c13b5c26"><td class="mdescLeft">&#160;</td><td class="mdescRight">将共享最低等级读取到调用方提供的存储位置。  <br /></td></tr>
+<tr class="memitem:ga05a169d4e46e9bdcfee71a8f97eed265" id="r_ga05a169d4e46e9bdcfee71a8f97eed265"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga05a169d4e46e9bdcfee71a8f97eed265">BSPLogPollLevelCommand</a> (void)</td></tr>
+<tr class="memdesc:ga05a169d4e46e9bdcfee71a8f97eed265"><td class="mdescLeft">&#160;</td><td class="mdescRight">轮询 RTT 下行通道 0 并应用完整的日志等级命令。  <br /></td></tr>
+<tr class="memitem:ga10046a12de152e4237027fc3b52a13d8" id="r_ga10046a12de152e4237027fc3b52a13d8"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga10046a12de152e4237027fc3b52a13d8">BSPLogGetLastError</a> (void)</td></tr>
+<tr class="memdesc:ga10046a12de152e4237027fc3b52a13d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">读取已保存的启动阶段或当前任务日志状态，不修改该状态。  <br /></td></tr>
+<tr class="memitem:ga387f170bcb7cb64383a69c877eb29af7" id="r_ga387f170bcb7cb64383a69c877eb29af7"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga387f170bcb7cb64383a69c877eb29af7">BSPLogClear</a> (void)</td></tr>
+<tr class="memdesc:ga387f170bcb7cb64383a69c877eb29af7"><td class="mdescLeft">&#160;</td><td class="mdescRight">通过 RTT 通道 0 提交终端清屏控制序列。  <br /></td></tr>
+<tr class="memitem:ga0b863622b6bc986893617c85b16f6d2e" id="r_ga0b863622b6bc986893617c85b16f6d2e"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="group__bsp__log.html#ga0b863622b6bc986893617c85b16f6d2e">Float2StrN</a> (char *str, size_t size, float va)</td></tr>
+<tr class="memdesc:ga0b863622b6bc986893617c85b16f6d2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">将有限浮点数转换为固定三位小数的字符串。  <br /></td></tr>
+</table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">详细描述</h2>
+<div class="textblock"><p>声明 RTT 分级日志接口和有限浮点数转换接口。 </p>
+<dl class="section author"><dt>作者</dt><dd>xiaoshuaijie </dd></dl>
+<dl class="section date"><dt>日期</dt><dd>2026-11-04 </dd></dl>
+<dl class="section version"><dt>版本</dt><dd>f84ee5c </dd></dl>
+<dl class="section since"><dt>自从</dt><dd>1.0.1 </dd></dl>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 中定义.</p>
+</div></div><!-- contents -->
+</div><!-- doc-content -->
+<div id="page-nav" class="page-nav-panel">
+<div id="page-nav-resize-handle"></div>
+<div id="page-nav-tree">
+<div id="page-nav-contents">
+</div><!-- page-nav-contents -->
+</div><!-- page-nav-tree -->
+</div><!-- page-nav -->
+</div><!-- container -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><b>bsp</b></li><li class="navelem"><b>log</b></li><li class="navelem"><a href="bsp__log_8h.html">bsp_log.h</a></li>
+    <li class="footer">制作者 <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.17.0 </li>
+  </ul>
+</div>
+</body>
+</html>

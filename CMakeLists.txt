@@ -76,6 +76,7 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
     $<$<CONFIG:Debug>:MCU_DEBUG_BUILD>
     $<$<CONFIG:Debug>:BSP_LOG_ENABLED>
+    BUFFER_SIZE_DOWN=64
 )
 
 # Remove wrong libob.a library dependency when using cpp files

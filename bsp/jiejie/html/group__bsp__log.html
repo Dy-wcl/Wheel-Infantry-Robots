@@ -1,0 +1,1024 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.17.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>My Project: RTT 日志</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="codefolding.js"></script>
+<script type="text/javascript" src="clipboard.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
+mermaid.initialize({ startOnLoad: true, theme: theme });
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectalign">
+   <div id="projectname">My Project<span id="projectnumber">&#160;1.0.1</span>
+   </div>
+   <div id="projectbrief">log日志库</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.17.0 -->
+<script type="text/javascript">
+let searchBox = new SearchBox("searchBox", "search/",'.html');
+</script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', codefold.init);
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', () => {
+  initMenu('',true);
+  init_search();
+});
+</script>
+<div id="main-nav-mobile">
+<div class="sm sm-dox"><input id="main-menu-state" type="checkbox"/>
+<label class="main-menu-btn" for="main-menu-state">
+<span class="main-menu-btn-icon"></span> Toggle main menu visibility</label>
+<span id="searchBoxPos1" style="position:absolute;right:8px;top:8px;height:36px;"></span>
+</div>
+</div><!-- main-nav-mobile -->
+<div id="main-nav">
+  <ul class="sm sm-dox" id="main-menu">
+    <li id="searchBoxPos2" style="float:right">
+        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="搜索" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+    </li>
+  </ul>
+</div><!-- main-nav -->
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded',() => { initNavTree('group__bsp__log.html','',''); });
+</script>
+<div id="container">
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">载入中...</div>
+<div class="SRStatus" id="Searching">搜索中...</div>
+<div class="SRStatus" id="NoMatches">未找到</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="headertitle"><div class="title">RTT 日志 </div></div>
+</div><!--header-->
+<div class="contents">
+
+<p>提供带标签的 RTT 记录和任务本地错误查询。  
+<a href="#details">更多...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
+宏定义</h2></td></tr>
+<tr class="memitem:ga789a618795c6ca85f4e228a5419cec08" id="r_ga789a618795c6ca85f4e228a5419cec08"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga789a618795c6ca85f4e228a5419cec08">BSP_LOG_ENABLED</a>&#160;&#160;&#160;0</td></tr>
+<tr class="memitem:gae98bf98bc309a9b92615da3359d8e2c7" id="r_gae98bf98bc309a9b92615da3359d8e2c7"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#gae98bf98bc309a9b92615da3359d8e2c7">BSP_LOG_CHANNEL_TERMINAL</a>&#160;&#160;&#160;0u</td></tr>
+<tr class="memitem:ga4d215e3008a190d0bdef3f421ccacfcf" id="r_ga4d215e3008a190d0bdef3f421ccacfcf"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga4d215e3008a190d0bdef3f421ccacfcf">BSP_LOG_CHANNEL_DATA</a>&#160;&#160;&#160;1u</td></tr>
+<tr class="memitem:ga783fc836c52da73c836213d58938e5ad" id="r_ga783fc836c52da73c836213d58938e5ad"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga783fc836c52da73c836213d58938e5ad">BSP_LOG_CHANNEL_RESERVED</a>&#160;&#160;&#160;2u</td></tr>
+<tr class="memitem:ga3d637375638a05532b7c96b6a4e8473a" id="r_ga3d637375638a05532b7c96b6a4e8473a"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga3d637375638a05532b7c96b6a4e8473a">BSP_LOG_CHANNEL_COMMAND</a>&#160;&#160;&#160;0u</td></tr>
+<tr class="memitem:ga79405596869c1eec446247f848113bd9" id="r_ga79405596869c1eec446247f848113bd9"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga79405596869c1eec446247f848113bd9">BSP_LOG_COMMAND_BUFFER_SIZE</a>&#160;&#160;&#160;32u</td></tr>
+<tr class="memitem:ga734162795be0ce929d65f8eac366f997" id="r_ga734162795be0ce929d65f8eac366f997"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga734162795be0ce929d65f8eac366f997">BSP_LOG_LINE_BUFFER_SIZE</a>&#160;&#160;&#160;512u</td></tr>
+<tr class="memitem:ga39aebeddb91c252dd9a5f5ee653d1039" id="r_ga39aebeddb91c252dd9a5f5ee653d1039"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga39aebeddb91c252dd9a5f5ee653d1039">BSP_LOG_DATA_BUFFER_SIZE</a>&#160;&#160;&#160;1024u</td></tr>
+<tr class="memitem:ga8262f1b6ff4d033321ce57b9dbe3aa5f" id="r_ga8262f1b6ff4d033321ce57b9dbe3aa5f"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga8262f1b6ff4d033321ce57b9dbe3aa5f">BSP_LOG_RESERVED_BUFFER_SIZE</a>&#160;&#160;&#160;256u</td></tr>
+<tr class="memitem:ga8d908a4fb5bb5dd6b46418c2179ebc68" id="r_ga8d908a4fb5bb5dd6b46418c2179ebc68"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga8d908a4fb5bb5dd6b46418c2179ebc68">BSP_LOG_DEFAULT_LEVEL</a>&#160;&#160;&#160;<a class="el" href="#ggab8cf237ccbf0e84a374c75be30ab2045ae90f7e016759efc4a9a7ba1c5907ced5">BSP_LOG_LEVEL_INFO</a></td></tr>
+<tr class="memitem:gab9ad21beb329dc35c12cabc295047af9" id="r_gab9ad21beb329dc35c12cabc295047af9"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#gab9ad21beb329dc35c12cabc295047af9">BSP_LOG_IPSR_THREAD_MODE</a>&#160;&#160;&#160;0U</td></tr>
+<tr class="memitem:ga0fe0963cbd6c6e7526d739cb40bc90bb" id="r_ga0fe0963cbd6c6e7526d739cb40bc90bb"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga0fe0963cbd6c6e7526d739cb40bc90bb">BSP_LOG_PRIMASK_UNMASKED</a>&#160;&#160;&#160;0U</td></tr>
+<tr class="memitem:gaa8ee327810e4ecb66be3025c0d29da61" id="r_gaa8ee327810e4ecb66be3025c0d29da61"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#gaa8ee327810e4ecb66be3025c0d29da61">BSP_LOG_BASEPRI_UNMASKED</a>&#160;&#160;&#160;0U</td></tr>
+<tr class="memitem:gaa54832e66f9356cb6abd44a98479dbf6" id="r_gaa54832e66f9356cb6abd44a98479dbf6"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#gaa54832e66f9356cb6abd44a98479dbf6">NO_THREAD_SAFE_PROMISE</a></td></tr>
+<tr class="memdesc:gaa54832e66f9356cb6abd44a98479dbf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">标记需要由调用方串行化的接口；除非外部定义，否则展开为空。  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+枚举</h2></td></tr>
+<tr class="memitem:gab8cf237ccbf0e84a374c75be30ab2045" id="r_gab8cf237ccbf0e84a374c75be30ab2045"><td class="memItemLeft">enum &#160;</td><td class="memItemRight"><a class="el" href="#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> { <br />
+&#160;&#160;<a class="el" href="#ggab8cf237ccbf0e84a374c75be30ab2045aec2c24e30416f9986988640ceadea528">BSP_LOG_LEVEL_TRACE</a> = 0
+, <a class="el" href="#ggab8cf237ccbf0e84a374c75be30ab2045ad7e338c14ea8186eca8d8202eb8edb7a">BSP_LOG_LEVEL_DEBUG</a>
+, <a class="el" href="#ggab8cf237ccbf0e84a374c75be30ab2045ae90f7e016759efc4a9a7ba1c5907ced5">BSP_LOG_LEVEL_INFO</a>
+, <a class="el" href="#ggab8cf237ccbf0e84a374c75be30ab2045a4c15a73bf32b8828728d86850cf0875d">BSP_LOG_LEVEL_WARN</a>
+, <br />
+&#160;&#160;<a class="el" href="#ggab8cf237ccbf0e84a374c75be30ab2045a0e08db53877e020ee71dff432eacfc90">BSP_LOG_LEVEL_ERROR</a>
+, <a class="el" href="#ggab8cf237ccbf0e84a374c75be30ab2045ad42ce2c2a6c63bb5529113bc0ce29d3d">BSP_LOG_LEVEL_FATAL</a>
+, <a class="el" href="#ggab8cf237ccbf0e84a374c75be30ab2045a4ac508b49f030df8492d330234e6db9b">BSP_LOG_LEVEL_COUNT</a>
+<br />
+ }</td></tr>
+<tr class="memdesc:gab8cf237ccbf0e84a374c75be30ab2045"><td class="mdescLeft">&#160;</td><td class="mdescRight">按 TRACE（0）至 FATAL（5）排列日志记录等级。  <a href="#gab8cf237ccbf0e84a374c75be30ab2045">更多...</a><br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:ga066488cf2dd06fe00afebce86ef15a3c" id="r_ga066488cf2dd06fe00afebce86ef15a3c"><td class="memItemLeft"><a class="el" href="#gaa54832e66f9356cb6abd44a98479dbf6">NO_THREAD_SAFE_PROMISE</a> err_t&#160;</td><td class="memItemRight"><a class="el" href="#ga066488cf2dd06fe00afebce86ef15a3c">BSPLogInit</a> (void)</td></tr>
+<tr class="memdesc:ga066488cf2dd06fe00afebce86ef15a3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">在调度器启动前初始化 RTT 终端、数据及预留通道。  <br /></td></tr>
+<tr class="memitem:ga3dcb142eb943496e5c5d5dd79f0be5b6" id="r_ga3dcb142eb943496e5c5d5dd79f0be5b6"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="#ga3dcb142eb943496e5c5d5dd79f0be5b6">BSPLogWrite</a> (<a class="el" href="#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> level, const char *tag, const char *format,...)</td></tr>
+<tr class="memdesc:ga3dcb142eb943496e5c5d5dd79f0be5b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">按指定等级格式化并提交带标签的日志记录。  <br /></td></tr>
+<tr class="memitem:ga89d112353a5694652830c5f2e82b91ce" id="r_ga89d112353a5694652830c5f2e82b91ce"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="#ga89d112353a5694652830c5f2e82b91ce">BSPLogVWrite</a> (<a class="el" href="#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> level, const char *tag, const char *format, va_list args)</td></tr>
+<tr class="memdesc:ga89d112353a5694652830c5f2e82b91ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">使用已有参数列表格式化并提交带标签的日志记录。  <br /></td></tr>
+<tr class="memitem:gaa83f7b624f3c1935147a0c27b6a0eca7" id="r_gaa83f7b624f3c1935147a0c27b6a0eca7"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="#gaa83f7b624f3c1935147a0c27b6a0eca7">BSPLogSetLevel</a> (<a class="el" href="#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> level)</td></tr>
+<tr class="memdesc:gaa83f7b624f3c1935147a0c27b6a0eca7"><td class="mdescLeft">&#160;</td><td class="mdescRight">设置后续日志记录使用的共享最低等级。  <br /></td></tr>
+<tr class="memitem:ga53595ca0d680bf757bf17a50c13b5c26" id="r_ga53595ca0d680bf757bf17a50c13b5c26"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="#ga53595ca0d680bf757bf17a50c13b5c26">BSPLogGetLevel</a> (<a class="el" href="#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> *level)</td></tr>
+<tr class="memdesc:ga53595ca0d680bf757bf17a50c13b5c26"><td class="mdescLeft">&#160;</td><td class="mdescRight">将共享最低等级读取到调用方提供的存储位置。  <br /></td></tr>
+<tr class="memitem:ga05a169d4e46e9bdcfee71a8f97eed265" id="r_ga05a169d4e46e9bdcfee71a8f97eed265"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="#ga05a169d4e46e9bdcfee71a8f97eed265">BSPLogPollLevelCommand</a> (void)</td></tr>
+<tr class="memdesc:ga05a169d4e46e9bdcfee71a8f97eed265"><td class="mdescLeft">&#160;</td><td class="mdescRight">轮询 RTT 下行通道 0 并应用完整的日志等级命令。  <br /></td></tr>
+<tr class="memitem:ga10046a12de152e4237027fc3b52a13d8" id="r_ga10046a12de152e4237027fc3b52a13d8"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="#ga10046a12de152e4237027fc3b52a13d8">BSPLogGetLastError</a> (void)</td></tr>
+<tr class="memdesc:ga10046a12de152e4237027fc3b52a13d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">读取已保存的启动阶段或当前任务日志状态，不修改该状态。  <br /></td></tr>
+<tr class="memitem:ga387f170bcb7cb64383a69c877eb29af7" id="r_ga387f170bcb7cb64383a69c877eb29af7"><td class="memItemLeft">err_t&#160;</td><td class="memItemRight"><a class="el" href="#ga387f170bcb7cb64383a69c877eb29af7">BSPLogClear</a> (void)</td></tr>
+<tr class="memdesc:ga387f170bcb7cb64383a69c877eb29af7"><td class="mdescLeft">&#160;</td><td class="mdescRight">通过 RTT 通道 0 提交终端清屏控制序列。  <br /></td></tr>
+<tr class="memitem:ga0b863622b6bc986893617c85b16f6d2e" id="r_ga0b863622b6bc986893617c85b16f6d2e"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ga0b863622b6bc986893617c85b16f6d2e">Float2StrN</a> (char *str, size_t size, float va)</td></tr>
+<tr class="memdesc:ga0b863622b6bc986893617c85b16f6d2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">将有限浮点数转换为固定三位小数的字符串。  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-member-group" class="groupheader"><a id="member-group" name="member-group"></a>
+日志快捷宏</h2></td></tr>
+<tr><td class="ititle" colspan="2"><p>使用固定等级调用 <a class="el" href="#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。">BSPLogWrite()</a>。</p>
+<p>tag 为非 NULL、NUL 结尾的标签，允许空串；format 为非 NULL 的 printf 格式串。 两者仅在调用期间借用，可变参数须与 format 匹配。 启用时返回 <a class="el" href="#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。">BSPLogWrite()</a> 的结果；关闭时展开为 ((void)0)。 </p><dl class="section note"><dt>注解</dt><dd>启用时每个参数求值一次，即使记录随后被等级过滤。 关闭时参数不求值，不输出日志，也不更新已保存状态。 需要始终获取返回状态时，请直接调用 <a class="el" href="#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。">BSPLogWrite()</a>。 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>启用时遵守 <a class="el" href="#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。">BSPLogWrite()</a> 的上下文、栈空间及格式要求。 </dd></dl>
+</td></tr>
+<tr class="memitem:ga1e4d8fbf5cde1810da15db1c751db468" id="r_ga1e4d8fbf5cde1810da15db1c751db468"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga1e4d8fbf5cde1810da15db1c751db468">LOG_DEBUG</a>(tag,  format, ...)</td></tr>
+<tr class="memitem:gad85c8c291e6615e4ccaea69b2e5cb97e" id="r_gad85c8c291e6615e4ccaea69b2e5cb97e"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#gad85c8c291e6615e4ccaea69b2e5cb97e">LOG_INFO</a>(tag,  format, ...)</td></tr>
+<tr class="memitem:ga84a4c23a3d72e43b7d69324cad41619d" id="r_ga84a4c23a3d72e43b7d69324cad41619d"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga84a4c23a3d72e43b7d69324cad41619d">LOG_WARN</a>(tag,  format, ...)</td></tr>
+<tr class="memitem:ga8fe5c9193457537f11eee68bc676a814" id="r_ga8fe5c9193457537f11eee68bc676a814"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga8fe5c9193457537f11eee68bc676a814">LOG_ERROR</a>(tag,  format, ...)</td></tr>
+<tr class="memitem:ga088a2e2d28abcc489a76643dc6d74dbe" id="r_ga088a2e2d28abcc489a76643dc6d74dbe"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga088a2e2d28abcc489a76643dc6d74dbe">LOG_FATAL</a>(tag,  format, ...)</td></tr>
+</table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">详细描述</h2>
+<div class="textblock"><p>提供带标签的 RTT 记录和任务本地错误查询。 </p>
+<dl class="section since"><dt>自从</dt><dd>1.0.1</dd></dl>
+<p>通道 0 用于文本，通道 1 用于 JScope，通道 2 用于预留数据。</p>
+<dl class="section user"><dt>状态保存约定</dt><dd>除查询接口另有说明外，操作结果保存在启动状态或当前任务状态中；OK 清除旧错误， PENDING 保留旧状态。ISR 调用不更新状态，FreeRTOS TLS 槽位 0 由本模块独占。 </dd></dl>
+</div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">宏定义说明</h2>
+<a id="gaa8ee327810e4ecb66be3025c0d29da61" name="gaa8ee327810e4ecb66be3025c0d29da61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa8ee327810e4ecb66be3025c0d29da61">&#9670;&#160;</a></span>BSP_LOG_BASEPRI_UNMASKED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_BASEPRI_UNMASKED&#160;&#160;&#160;0U</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>BASEPRI：无优先级屏蔽。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00057">57</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga3d637375638a05532b7c96b6a4e8473a" name="ga3d637375638a05532b7c96b6a4e8473a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3d637375638a05532b7c96b6a4e8473a">&#9670;&#160;</a></span>BSP_LOG_CHANNEL_COMMAND</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_CHANNEL_COMMAND&#160;&#160;&#160;0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>下行通道：日志等级命令。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00043">43</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga4d215e3008a190d0bdef3f421ccacfcf" name="ga4d215e3008a190d0bdef3f421ccacfcf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4d215e3008a190d0bdef3f421ccacfcf">&#9670;&#160;</a></span>BSP_LOG_CHANNEL_DATA</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_CHANNEL_DATA&#160;&#160;&#160;1u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>上行通道：JScope 数据。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00041">41</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga783fc836c52da73c836213d58938e5ad" name="ga783fc836c52da73c836213d58938e5ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga783fc836c52da73c836213d58938e5ad">&#9670;&#160;</a></span>BSP_LOG_CHANNEL_RESERVED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_CHANNEL_RESERVED&#160;&#160;&#160;2u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>上行通道：预留输出。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00042">42</a> 行定义.</p>
+
+</div>
+</div>
+<a id="gae98bf98bc309a9b92615da3359d8e2c7" name="gae98bf98bc309a9b92615da3359d8e2c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae98bf98bc309a9b92615da3359d8e2c7">&#9670;&#160;</a></span>BSP_LOG_CHANNEL_TERMINAL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_CHANNEL_TERMINAL&#160;&#160;&#160;0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>上行通道：终端日志。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00040">40</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga79405596869c1eec446247f848113bd9" name="ga79405596869c1eec446247f848113bd9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga79405596869c1eec446247f848113bd9">&#9670;&#160;</a></span>BSP_LOG_COMMAND_BUFFER_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_COMMAND_BUFFER_SIZE&#160;&#160;&#160;32u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>命令缓冲区容量（字节，包含 NUL）。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00047">47</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga39aebeddb91c252dd9a5f5ee653d1039" name="ga39aebeddb91c252dd9a5f5ee653d1039"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga39aebeddb91c252dd9a5f5ee653d1039">&#9670;&#160;</a></span>BSP_LOG_DATA_BUFFER_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_DATA_BUFFER_SIZE&#160;&#160;&#160;1024u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>静态 JScope 上行缓冲区容量（字节）。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00049">49</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga8d908a4fb5bb5dd6b46418c2179ebc68" name="ga8d908a4fb5bb5dd6b46418c2179ebc68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8d908a4fb5bb5dd6b46418c2179ebc68">&#9670;&#160;</a></span>BSP_LOG_DEFAULT_LEVEL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_DEFAULT_LEVEL&#160;&#160;&#160;<a class="el" href="#ggab8cf237ccbf0e84a374c75be30ab2045ae90f7e016759efc4a9a7ba1c5907ced5">BSP_LOG_LEVEL_INFO</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>初始最低等级：INFO。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00051">51</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga789a618795c6ca85f4e228a5419cec08" name="ga789a618795c6ca85f4e228a5419cec08"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga789a618795c6ca85f4e228a5419cec08">&#9670;&#160;</a></span>BSP_LOG_ENABLED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_ENABLED&#160;&#160;&#160;0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>编译开关：0 关闭，非零启用；可由外部定义。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00037">37</a> 行定义.</p>
+
+</div>
+</div>
+<a id="gab9ad21beb329dc35c12cabc295047af9" name="gab9ad21beb329dc35c12cabc295047af9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab9ad21beb329dc35c12cabc295047af9">&#9670;&#160;</a></span>BSP_LOG_IPSR_THREAD_MODE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_IPSR_THREAD_MODE&#160;&#160;&#160;0U</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>IPSR：线程模式。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00055">55</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga734162795be0ce929d65f8eac366f997" name="ga734162795be0ce929d65f8eac366f997"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga734162795be0ce929d65f8eac366f997">&#9670;&#160;</a></span>BSP_LOG_LINE_BUFFER_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_LINE_BUFFER_SIZE&#160;&#160;&#160;512u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>单次行缓冲区容量（字节，包含 NUL）。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00048">48</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga0fe0963cbd6c6e7526d739cb40bc90bb" name="ga0fe0963cbd6c6e7526d739cb40bc90bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0fe0963cbd6c6e7526d739cb40bc90bb">&#9670;&#160;</a></span>BSP_LOG_PRIMASK_UNMASKED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_PRIMASK_UNMASKED&#160;&#160;&#160;0U</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>PRIMASK：未屏蔽中断。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00056">56</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga8262f1b6ff4d033321ce57b9dbe3aa5f" name="ga8262f1b6ff4d033321ce57b9dbe3aa5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8262f1b6ff4d033321ce57b9dbe3aa5f">&#9670;&#160;</a></span>BSP_LOG_RESERVED_BUFFER_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BSP_LOG_RESERVED_BUFFER_SIZE&#160;&#160;&#160;256u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>静态预留上行缓冲区容量（字节）。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00050">50</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga1e4d8fbf5cde1810da15db1c751db468" name="ga1e4d8fbf5cde1810da15db1c751db468"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1e4d8fbf5cde1810da15db1c751db468">&#9670;&#160;</a></span>LOG_DEBUG</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LOG_DEBUG</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>tag</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>format</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em></em></span>...&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line">((void)0)</div>
+</div><!-- fragment -->
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00257">257</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga8fe5c9193457537f11eee68bc676a814" name="ga8fe5c9193457537f11eee68bc676a814"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8fe5c9193457537f11eee68bc676a814">&#9670;&#160;</a></span>LOG_ERROR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LOG_ERROR</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>tag</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>format</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em></em></span>...&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line">((void)0)</div>
+</div><!-- fragment -->
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00260">260</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga088a2e2d28abcc489a76643dc6d74dbe" name="ga088a2e2d28abcc489a76643dc6d74dbe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga088a2e2d28abcc489a76643dc6d74dbe">&#9670;&#160;</a></span>LOG_FATAL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LOG_FATAL</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>tag</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>format</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em></em></span>...&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line">((void)0)</div>
+</div><!-- fragment -->
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00261">261</a> 行定义.</p>
+
+</div>
+</div>
+<a id="gad85c8c291e6615e4ccaea69b2e5cb97e" name="gad85c8c291e6615e4ccaea69b2e5cb97e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad85c8c291e6615e4ccaea69b2e5cb97e">&#9670;&#160;</a></span>LOG_INFO</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LOG_INFO</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>tag</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>format</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em></em></span>...&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line">((void)0)</div>
+</div><!-- fragment -->
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00258">258</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga84a4c23a3d72e43b7d69324cad41619d" name="ga84a4c23a3d72e43b7d69324cad41619d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga84a4c23a3d72e43b7d69324cad41619d">&#9670;&#160;</a></span>LOG_WARN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LOG_WARN</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>tag</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>format</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em></em></span>...&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line">((void)0)</div>
+</div><!-- fragment -->
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00259">259</a> 行定义.</p>
+
+</div>
+</div>
+<a id="gaa54832e66f9356cb6abd44a98479dbf6" name="gaa54832e66f9356cb6abd44a98479dbf6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa54832e66f9356cb6abd44a98479dbf6">&#9670;&#160;</a></span>NO_THREAD_SAFE_PROMISE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NO_THREAD_SAFE_PROMISE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>标记需要由调用方串行化的接口；除非外部定义，否则展开为空。 </p>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00079">79</a> 行定义.</p>
+
+</div>
+</div>
+<a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">枚举类型说明</h2>
+<a id="gab8cf237ccbf0e84a374c75be30ab2045" name="gab8cf237ccbf0e84a374c75be30ab2045"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab8cf237ccbf0e84a374c75be30ab2045">&#9670;&#160;</a></span>bsp_log_level_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>按 TRACE（0）至 FATAL（5）排列日志记录等级。 </p>
+<p>为记录和共享最低等级过滤器提供等级定义；COUNT 是哨兵值。 </p>
+<table class="fieldtable">
+<tr><th colspan="2">枚举值</th></tr><tr><td class="fieldname"><a id="ggab8cf237ccbf0e84a374c75be30ab2045aec2c24e30416f9986988640ceadea528" name="ggab8cf237ccbf0e84a374c75be30ab2045aec2c24e30416f9986988640ceadea528"></a>BSP_LOG_LEVEL_TRACE&#160;</td><td class="fielddoc"><p>跟踪（0）。 </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab8cf237ccbf0e84a374c75be30ab2045ad7e338c14ea8186eca8d8202eb8edb7a" name="ggab8cf237ccbf0e84a374c75be30ab2045ad7e338c14ea8186eca8d8202eb8edb7a"></a>BSP_LOG_LEVEL_DEBUG&#160;</td><td class="fielddoc"><p>调试（1）。 </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab8cf237ccbf0e84a374c75be30ab2045ae90f7e016759efc4a9a7ba1c5907ced5" name="ggab8cf237ccbf0e84a374c75be30ab2045ae90f7e016759efc4a9a7ba1c5907ced5"></a>BSP_LOG_LEVEL_INFO&#160;</td><td class="fielddoc"><p>信息（2）。 </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab8cf237ccbf0e84a374c75be30ab2045a4c15a73bf32b8828728d86850cf0875d" name="ggab8cf237ccbf0e84a374c75be30ab2045a4c15a73bf32b8828728d86850cf0875d"></a>BSP_LOG_LEVEL_WARN&#160;</td><td class="fielddoc"><p>警告（3）。 </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab8cf237ccbf0e84a374c75be30ab2045a0e08db53877e020ee71dff432eacfc90" name="ggab8cf237ccbf0e84a374c75be30ab2045a0e08db53877e020ee71dff432eacfc90"></a>BSP_LOG_LEVEL_ERROR&#160;</td><td class="fielddoc"><p>错误（4）。 </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab8cf237ccbf0e84a374c75be30ab2045ad42ce2c2a6c63bb5529113bc0ce29d3d" name="ggab8cf237ccbf0e84a374c75be30ab2045ad42ce2c2a6c63bb5529113bc0ce29d3d"></a>BSP_LOG_LEVEL_FATAL&#160;</td><td class="fielddoc"><p>致命（5），不会停止运行。 </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab8cf237ccbf0e84a374c75be30ab2045a4ac508b49f030df8492d330234e6db9b" name="ggab8cf237ccbf0e84a374c75be30ab2045a4ac508b49f030df8492d330234e6db9b"></a>BSP_LOG_LEVEL_COUNT&#160;</td><td class="fielddoc"><p>等级数量，不是有效日志等级。 </p>
+</td></tr>
+</table>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8h_source.html">bsp_log.h</a> 第 <a class="el" href="bsp__log_8h_source.html#l00065">65</a> 行定义.</p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">函数说明</h2>
+<a id="ga387f170bcb7cb64383a69c877eb29af7" name="ga387f170bcb7cb64383a69c877eb29af7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga387f170bcb7cb64383a69c877eb29af7">&#9670;&#160;</a></span>BSPLogClear()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">err_t BSPLogClear </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>通过 RTT 通道 0 提交终端清屏控制序列。 </p>
+<dl class="section return"><dt>返回</dt><dd>控制序列提交状态，具体取值如下。 </dd></dl>
+<dl class="retval"><dt>返回值</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">OK</td><td>清屏序列提交成功。 </td></tr>
+    <tr><td class="paramname">INIT_ERR</td><td>日志尚未初始化。 </td></tr>
+    <tr><td class="paramname">STATE_ERR</td><td>上下文被拒绝。 </td></tr>
+    <tr><td class="paramname">NO_BUFF</td><td>RTT 空间不足。 </td></tr>
+    <tr><td class="paramname">NOT_SUPPORT</td><td>日志已关闭。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>注解</dt><dd>写入两个空格和 RTT_CTRL_CLEAR，不发送末尾 NUL。 控制序列由主机终端解释，不丢弃 RTT 缓冲数据。 结果写入启动状态或任务状态；ISR 结果不会更新状态。 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>拒绝 ISR、中断屏蔽和调度器挂起上下文；通道 0 必须保持 SEGGER_RTT_MODE_NO_BLOCK_SKIP 模式。 </dd></dl>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8c_source.html">bsp_log.c</a> 第 <a class="el" href="bsp__log_8c_source.html#l00426">426</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga10046a12de152e4237027fc3b52a13d8" name="ga10046a12de152e4237027fc3b52a13d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga10046a12de152e4237027fc3b52a13d8">&#9670;&#160;</a></span>BSPLogGetLastError()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">err_t BSPLogGetLastError </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>读取已保存的启动阶段或当前任务日志状态，不修改该状态。 </p>
+<dl class="section return"><dt>返回</dt><dd>线程模式下返回已保存的 err_t 状态；ISR 中返回 STATE_ERR。 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>调度器启动前读取启动状态，启动后读取任务本地存储槽 0。 新任务初始状态为 OK；被过滤记录保留已保存状态。ISR 查询不访问 TLS。 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>FreeRTOS TLS 槽 0 专供本模块使用，不得复用。 </dd></dl>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8c_source.html">bsp_log.c</a> 第 <a class="el" href="bsp__log_8c_source.html#l00338">338</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga53595ca0d680bf757bf17a50c13b5c26" name="ga53595ca0d680bf757bf17a50c13b5c26"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga53595ca0d680bf757bf17a50c13b5c26">&#9670;&#160;</a></span>BSPLogGetLevel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">err_t BSPLogGetLevel </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a> *</td>          <td class="paramname"><span class="paramname"><em>level</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>将共享最低等级读取到调用方提供的存储位置。 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">level</td><td>借用的非空输出指针，接收 TRACE 至 FATAL 范围内的等级。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>等级读取状态。 </dd></dl>
+<dl class="retval"><dt>返回值</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">OK</td><td>读取成功。 </td></tr>
+    <tr><td class="paramname">PTR_NULL</td><td>输出指针为空。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>注解</dt><dd>使用原子读取，即使关闭日志也可查询。成功读取保留已保存错误； 除 ISR 外，空指针错误会更新已保存状态。 </dd></dl>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8c_source.html">bsp_log.c</a> 第 <a class="el" href="bsp__log_8c_source.html#l00272">272</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga066488cf2dd06fe00afebce86ef15a3c" name="ga066488cf2dd06fe00afebce86ef15a3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga066488cf2dd06fe00afebce86ef15a3c">&#9670;&#160;</a></span>BSPLogInit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#gaa54832e66f9356cb6abd44a98479dbf6">NO_THREAD_SAFE_PROMISE</a> err_t BSPLogInit </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>在调度器启动前初始化 RTT 终端、数据及预留通道。 </p>
+<dl class="section return"><dt>返回</dt><dd>初始化状态，具体取值如下。 </dd></dl>
+<dl class="retval"><dt>返回值</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">OK</td><td>初始化成功或重复成功初始化。 </td></tr>
+    <tr><td class="paramname">STATE_ERR</td><td>不在启动阶段线程上下文。 </td></tr>
+    <tr><td class="paramname">INIT_ERR</td><td>RTT 配置失败。 </td></tr>
+    <tr><td class="paramname">NOT_SUPPORT</td><td>日志已关闭。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>注解</dt><dd>将终端设置为非阻塞整条跳过模式，并将等级设置为 INFO。 重复成功调用会保留缓冲数据和已配置等级。 初始化失败时可在调度器启动前重试。 结果写入启动状态或任务状态；ISR 结果不会更新状态。 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>要求在调度器启动前单线程初始化；函数不是线程安全的。 </dd></dl>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8c_source.html">bsp_log.c</a> 第 <a class="el" href="bsp__log_8c_source.html#l00218">218</a> 行定义.</p>
+
+</div>
+</div>
+<a id="ga05a169d4e46e9bdcfee71a8f97eed265" name="ga05a169d4e46e9bdcfee71a8f97eed265"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga05a169d4e46e9bdcfee71a8f97eed265">&#9670;&#160;</a></span>BSPLogPollLevelCommand()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">err_t BSPLogPollLevelCommand </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>轮询 RTT 下行通道 0 并应用完整的日志等级命令。 </p>
+<dl class="section return"><dt>返回</dt><dd>命令处理状态，具体取值如下。 </dd></dl>
+<dl class="retval"><dt>返回值</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">OK</td><td>至少应用一条命令。 </td></tr>
+    <tr><td class="paramname">PENDING</td><td>没有完整命令可用。 </td></tr>
+    <tr><td class="paramname">ARG_ERR</td><td>完整命令非法。 </td></tr>
+    <tr><td class="paramname">STATE_ERR</td><td>不在任务上下文。 </td></tr>
+    <tr><td class="paramname">INIT_ERR</td><td>尚未调用 <a class="el" href="#ga066488cf2dd06fe00afebce86ef15a3c" title="在调度器启动前初始化 RTT 终端、数据及预留通道。">BSPLogInit()</a>。 </td></tr>
+    <tr><td class="paramname">NOT_SUPPORT</td><td>日志已关闭。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>注解</dt><dd>支持 0 至 5 的原始等级字节；文本命令不区分大小写，以 CR 或 LF 结束。 文本格式：<span class="tt">0</span> 至 <span class="tt">5</span>、<span class="tt">TRACE</span> 至 <span class="tt">FATAL</span>、<span class="tt">level=&lt;name&gt;</span>、 <span class="tt">level &lt;name&gt;</span> 或 <span class="tt">log level &lt;name&gt;</span>。 不完整输入保留到下次调用；过长行丢弃至下一个结束符。 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>应在 <a class="el" href="#ga066488cf2dd06fe00afebce86ef15a3c" title="在调度器启动前初始化 RTT 终端、数据及预留通道。">BSPLogInit()</a> 后由单个线程周期调用。 </dd></dl>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8c_source.html">bsp_log.c</a> 第 <a class="el" href="bsp__log_8c_source.html#l00281">281</a> 行定义.</p>
+<div class="dynheader">
+函数调用图:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__bsp__log_ga05a169d4e46e9bdcfee71a8f97eed265_cgraph.png" border="0" usemap="#agroup__bsp__log_ga05a169d4e46e9bdcfee71a8f97eed265_cgraph" loading="lazy" alt=""/></div>
+<map name="agroup__bsp__log_ga05a169d4e46e9bdcfee71a8f97eed265_cgraph" id="agroup__bsp__log_ga05a169d4e46e9bdcfee71a8f97eed265_cgraph">
+<area shape="rect" title="轮询 RTT 下行通道 0 并应用完整的日志等级命令。" alt="" coords="5,5,188,32"/>
+<area shape="rect" href="group__bsp__log.html#gaa83f7b624f3c1935147a0c27b6a0eca7" title="设置后续日志记录使用的共享最低等级。" alt="" coords="236,5,356,32"/>
+<area shape="poly" title=" " alt="" coords="188,16,223,19,217,19,188,21"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="gaa83f7b624f3c1935147a0c27b6a0eca7" name="gaa83f7b624f3c1935147a0c27b6a0eca7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa83f7b624f3c1935147a0c27b6a0eca7">&#9670;&#160;</a></span>BSPLogSetLevel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">err_t BSPLogSetLevel </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a></td>          <td class="paramname"><span class="paramname"><em>level</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>设置后续日志记录使用的共享最低等级。 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">level</td><td>最低等级，范围为 TRACE（0）至 FATAL（5）。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>等级设置状态。 </dd></dl>
+<dl class="retval"><dt>返回值</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">OK</td><td>等级更新成功。 </td></tr>
+    <tr><td class="paramname">ARG_ERR</td><td>等级超出范围。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>注解</dt><dd>使用原子写入，即使关闭日志也可配置；非法输入保留原等级。 </dd></dl>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8c_source.html">bsp_log.c</a> 第 <a class="el" href="bsp__log_8c_source.html#l00263">263</a> 行定义.</p>
+<div class="dynheader">
+这是这个函数的调用关系图:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__bsp__log_gaa83f7b624f3c1935147a0c27b6a0eca7_icgraph.png" border="0" usemap="#agroup__bsp__log_gaa83f7b624f3c1935147a0c27b6a0eca7_icgraph" loading="lazy" alt=""/></div>
+<map name="agroup__bsp__log_gaa83f7b624f3c1935147a0c27b6a0eca7_icgraph" id="agroup__bsp__log_gaa83f7b624f3c1935147a0c27b6a0eca7_icgraph">
+<area shape="rect" title="设置后续日志记录使用的共享最低等级。" alt="" coords="236,5,356,32"/>
+<area shape="rect" href="group__bsp__log.html#ga05a169d4e46e9bdcfee71a8f97eed265" title="轮询 RTT 下行通道 0 并应用完整的日志等级命令。" alt="" coords="5,5,188,32"/>
+<area shape="poly" title=" " alt="" coords="218,19,188,21,188,16,223,19"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="ga89d112353a5694652830c5f2e82b91ce" name="ga89d112353a5694652830c5f2e82b91ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga89d112353a5694652830c5f2e82b91ce">&#9670;&#160;</a></span>BSPLogVWrite()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">err_t BSPLogVWrite </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a></td>          <td class="paramname"><span class="paramname"><em>level</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>tag</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>format</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">va_list</td>          <td class="paramname"><span class="paramname"><em>args</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>使用已有参数列表格式化并提交带标签的日志记录。 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">level</td><td>日志等级，范围为 TRACE（0）至 FATAL（5）。 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tag</td><td>借用的非空、NUL 结尾标签；允许为空串，在调用期间有效。 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>借用的非空 printf 格式串，在调用期间有效。 </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">args</td><td>格式化时消耗的参数列表；如需复用请使用 va_copy。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>与 <a class="el" href="#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。">BSPLogWrite()</a> 相同，详见其返回值说明。 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>输出格式、过滤顺序、栈需求和状态保存规则与 <a class="el" href="#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。">BSPLogWrite()</a> 相同。 函数返回后不保留 tag、format 或 args。 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>未被过滤的写入拒绝 ISR、中断屏蔽和调度器挂起上下文；通道 0 必须保持 SEGGER_RTT_MODE_NO_BLOCK_SKIP 模式。 </dd></dl>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8c_source.html">bsp_log.c</a> 第 <a class="el" href="bsp__log_8c_source.html#l00349">349</a> 行定义.</p>
+<div class="dynheader">
+这是这个函数的调用关系图:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__bsp__log_ga89d112353a5694652830c5f2e82b91ce_icgraph.png" border="0" usemap="#agroup__bsp__log_ga89d112353a5694652830c5f2e82b91ce_icgraph" loading="lazy" alt=""/></div>
+<map name="agroup__bsp__log_ga89d112353a5694652830c5f2e82b91ce_icgraph" id="agroup__bsp__log_ga89d112353a5694652830c5f2e82b91ce_icgraph">
+<area shape="rect" title="使用已有参数列表格式化并提交带标签的日志记录。" alt="" coords="153,5,261,32"/>
+<area shape="rect" href="group__bsp__log.html#ga3dcb142eb943496e5c5d5dd79f0be5b6" title="按指定等级格式化并提交带标签的日志记录。" alt="" coords="5,5,105,32"/>
+<area shape="poly" title=" " alt="" coords="134,19,105,21,105,16,140,18"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="ga3dcb142eb943496e5c5d5dd79f0be5b6" name="ga3dcb142eb943496e5c5d5dd79f0be5b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3dcb142eb943496e5c5d5dd79f0be5b6">&#9670;&#160;</a></span>BSPLogWrite()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">err_t BSPLogWrite </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#gab8cf237ccbf0e84a374c75be30ab2045">bsp_log_level_t</a></td>          <td class="paramname"><span class="paramname"><em>level</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>tag</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>format</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>按指定等级格式化并提交带标签的日志记录。 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">level</td><td>日志等级，范围为 TRACE（0）至 FATAL（5）。 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tag</td><td>借用的非空、NUL 结尾标签；允许为空串，在调用期间有效。 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">format</td><td>借用的非空 printf 格式串，在调用期间有效。 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">...</td><td>按 format 要求的顺序和类型提供格式化参数。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>日志提交状态，具体取值如下。 </dd></dl>
+<dl class="retval"><dt>返回值</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">OK</td><td>记录提交成功。 </td></tr>
+    <tr><td class="paramname">PENDING</td><td>记录被等级过滤。 </td></tr>
+    <tr><td class="paramname">ARG_ERR</td><td>日志等级非法。 </td></tr>
+    <tr><td class="paramname">PTR_NULL</td><td>tag 或 format 为空。 </td></tr>
+    <tr><td class="paramname">INIT_ERR</td><td>日志尚未初始化。 </td></tr>
+    <tr><td class="paramname">STATE_ERR</td><td>上下文被拒绝。 </td></tr>
+    <tr><td class="paramname">FAILED</td><td>格式化失败。 </td></tr>
+    <tr><td class="paramname">SIZE_ERR</td><td>记录过长。 </td></tr>
+    <tr><td class="paramname">NO_BUFF</td><td>RTT 空间不足。 </td></tr>
+    <tr><td class="paramname">NOT_SUPPORT</td><td>日志已关闭。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>注解</dt><dd>使用私有栈缓冲区，并通过 RTT 内部锁执行一次写入。 记录格式为“[LEVEL][tag] 正文”，末尾为 CRLF，最多提交 511 字节。 过滤在参数和初始化检查之后、上下文检查之前执行。 PENDING 直接跳过记录，不入队且不改变已保存错误状态。 其他结果更新启动状态或当前任务状态；ISR 结果不会更新状态。 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>未被过滤的写入拒绝 ISR、中断屏蔽和调度器挂起上下文。 512 字节行缓冲区及 libc 格式化需要调用方提供足够栈空间。 格式化参数必须与 format 匹配；libc 格式化可能分配内存。 初始化后通道 0 必须保持 SEGGER_RTT_MODE_NO_BLOCK_SKIP 模式。 </dd></dl>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8c_source.html">bsp_log.c</a> 第 <a class="el" href="bsp__log_8c_source.html#l00416">416</a> 行定义.</p>
+<div class="dynheader">
+函数调用图:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__bsp__log_ga3dcb142eb943496e5c5d5dd79f0be5b6_cgraph.png" border="0" usemap="#agroup__bsp__log_ga3dcb142eb943496e5c5d5dd79f0be5b6_cgraph" loading="lazy" alt=""/></div>
+<map name="agroup__bsp__log_ga3dcb142eb943496e5c5d5dd79f0be5b6_cgraph" id="agroup__bsp__log_ga3dcb142eb943496e5c5d5dd79f0be5b6_cgraph">
+<area shape="rect" title="按指定等级格式化并提交带标签的日志记录。" alt="" coords="5,5,105,32"/>
+<area shape="rect" href="group__bsp__log.html#ga89d112353a5694652830c5f2e82b91ce" title="使用已有参数列表格式化并提交带标签的日志记录。" alt="" coords="153,5,261,32"/>
+<area shape="poly" title=" " alt="" coords="105,16,140,18,135,19,105,21"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="ga0b863622b6bc986893617c85b16f6d2e" name="ga0b863622b6bc986893617c85b16f6d2e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0b863622b6bc986893617c85b16f6d2e">&#9670;&#160;</a></span>Float2StrN()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Float2StrN </td>
+          <td>(</td>
+          <td class="paramtype">char *</td>          <td class="paramname"><span class="paramname"><em>str</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>size</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>va</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>将有限浮点数转换为固定三位小数的字符串。 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">str</td><td>借用的非空调用方缓冲区，最多接收 size 字节（包括 NUL）。 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>缓冲区容量，单位为字节，至少为 1，包括 NUL 结束符空间。 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">va</td><td>有限输入值，取整后的 va * 1000 位于 [-2^63, 2^63) 内。 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>成功时返回完整结果字符数（不含 NUL）；返回值大于等于 size 表示截断。 str 为 NULL、size 为 0、输入非有限或越界、snprintf 失败时返回 -1。 </dd></dl>
+<dl class="section note"><dt>注解</dt><dd>以 0.001 精度取整，中点向远离零方向舍入，取整后的零输出为 0.000。 size 大于 0 且 str 非 NULL 时，即使失败，缓冲区也以 NUL 结尾。 整数部分按 32 位十进制分组以支持 newlib-nano；不读取或修改日志错误状态。 </dd></dl>
+<dl class="section warning"><dt>警告</dt><dd>要求 str 指向至少 size 字节的可写缓冲区，调用上下文满足 libc 格式化要求。 </dd></dl>
+
+<p class="definition">在文件 <a class="el" href="bsp__log_8c_source.html">bsp_log.c</a> 第 <a class="el" href="bsp__log_8c_source.html#l00442">442</a> 行定义.</p>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<div id="page-nav" class="page-nav-panel">
+<div id="page-nav-resize-handle"></div>
+<div id="page-nav-tree">
+<div id="page-nav-contents">
+</div><!-- page-nav-contents -->
+</div><!-- page-nav-tree -->
+</div><!-- page-nav -->
+</div><!-- container -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">制作者 <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.17.0 </li>
+  </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+var searchData=
+[
+  ['bsplogclear_0',['BSPLogClear',['../group__bsp__log.html#ga387f170bcb7cb64383a69c877eb29af7',1,'BSPLogClear(void):&#160;bsp_log.c'],['../group__bsp__log.html#ga387f170bcb7cb64383a69c877eb29af7',1,'BSPLogClear(void):&#160;bsp_log.c']]],
+  ['bsploggetlasterror_1',['BSPLogGetLastError',['../group__bsp__log.html#ga10046a12de152e4237027fc3b52a13d8',1,'BSPLogGetLastError(void):&#160;bsp_log.c'],['../group__bsp__log.html#ga10046a12de152e4237027fc3b52a13d8',1,'BSPLogGetLastError(void):&#160;bsp_log.c']]],
+  ['bsploggetlevel_2',['BSPLogGetLevel',['../group__bsp__log.html#ga53595ca0d680bf757bf17a50c13b5c26',1,'BSPLogGetLevel(bsp_log_level_t *level):&#160;bsp_log.c'],['../group__bsp__log.html#ga53595ca0d680bf757bf17a50c13b5c26',1,'BSPLogGetLevel(bsp_log_level_t *level):&#160;bsp_log.c']]],
+  ['bsploginit_3',['BSPLogInit',['../group__bsp__log.html#ga066488cf2dd06fe00afebce86ef15a3c',1,'BSPLogInit(void):&#160;bsp_log.c'],['../group__bsp__log.html#ga066488cf2dd06fe00afebce86ef15a3c',1,'BSPLogInit(void):&#160;bsp_log.c']]],
+  ['bsplogpolllevelcommand_4',['BSPLogPollLevelCommand',['../group__bsp__log.html#ga05a169d4e46e9bdcfee71a8f97eed265',1,'BSPLogPollLevelCommand(void):&#160;bsp_log.c'],['../group__bsp__log.html#ga05a169d4e46e9bdcfee71a8f97eed265',1,'BSPLogPollLevelCommand(void):&#160;bsp_log.c']]],
+  ['bsplogsetlevel_5',['BSPLogSetLevel',['../group__bsp__log.html#gaa83f7b624f3c1935147a0c27b6a0eca7',1,'BSPLogSetLevel(bsp_log_level_t level):&#160;bsp_log.c'],['../group__bsp__log.html#gaa83f7b624f3c1935147a0c27b6a0eca7',1,'BSPLogSetLevel(bsp_log_level_t level):&#160;bsp_log.c']]],
+  ['bsplogvwrite_6',['BSPLogVWrite',['../group__bsp__log.html#ga89d112353a5694652830c5f2e82b91ce',1,'BSPLogVWrite(bsp_log_level_t level, const char *tag, const char *format, va_list args):&#160;bsp_log.c'],['../group__bsp__log.html#ga89d112353a5694652830c5f2e82b91ce',1,'BSPLogVWrite(bsp_log_level_t level, const char *tag, const char *format, va_list args):&#160;bsp_log.c']]],
+  ['bsplogwrite_7',['BSPLogWrite',['../group__bsp__log.html#ga3dcb142eb943496e5c5d5dd79f0be5b6',1,'BSPLogWrite(bsp_log_level_t level, const char *tag, const char *format,...):&#160;bsp_log.c'],['../group__bsp__log.html#ga3dcb142eb943496e5c5d5dd79f0be5b6',1,'BSPLogWrite(bsp_log_level_t level, const char *tag, const char *format,...):&#160;bsp_log.c']]]
+];

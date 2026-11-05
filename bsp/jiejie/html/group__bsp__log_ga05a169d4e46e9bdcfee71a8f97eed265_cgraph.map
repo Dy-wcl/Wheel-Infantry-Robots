@@ -1,0 +1,5 @@
+<map id="BSPLogPollLevelCommand" name="BSPLogPollLevelCommand">
+<area shape="rect" id="Node000001" title="轮询 RTT 下行通道 0 并应用完整的日志等级命令。" alt="" coords="5,5,188,32"/>
+<area shape="rect" id="Node000002" href="$group__bsp__log.html#gaa83f7b624f3c1935147a0c27b6a0eca7" title="设置后续日志记录使用的共享最低等级。" alt="" coords="236,5,356,32"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="188,16,223,19,217,19,188,21"/>
+</map>
