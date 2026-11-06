@@ -3,6 +3,7 @@
  * @brief 麦克纳姆轮底盘控制实现
  */
 #include "chassis_control.h"
+#include "bsp_log.h"
 
 #include <math.h>
 #include <stdbool.h>
@@ -38,20 +39,25 @@ static float torque_ff_current[4];
  * @return OK 或错误码
  */
 err_t chassis_control_init(void) {
+  LOG_INFO("底盘计算", "开始初始化 VT13 底盘 CAN 总线和电机");
   /* 获取 CAN2 的 BSP 对象（假设 CAN2 用于底盘） */
   BSP_CAN_t can_id = BSP_CAN_get_id(CAN2);
   if (can_id == BSP_CAN_ID_ERROR) {
+    LOG_ERROR("底盘计算", "未找到 VT13 底盘 CAN2 对象");
     return NOT_FOUND;
   }
 
   STM32CAN_t* can2 = STM32CAN_GetInstance(can_id);
   if (can2 == NULL) {
+    LOG_ERROR("底盘计算", "VT13 底盘 CAN2 控制块为空");
     return PTR_NULL;
   }
 
   /* 初始化底盘总线 */
   chassis_bus_init_result = dj_motor_bus_init(&chassis_bus, can2);
   if (chassis_bus_init_result != OK) {
+    LOG_ERROR("底盘计算", "VT13 底盘总线初始化失败，错误码=%d",
+              (int)chassis_bus_init_result);
     return chassis_bus_init_result;
   }
 
@@ -65,23 +71,40 @@ err_t chassis_control_init(void) {
   chassis_init_result[0] =
       dj_motor_init(&chassis_motors[CHASSIS_MOTOR_FL], &chassis_bus,
                     DJ_MOTOR_M3508, 4, false); /* 左前轮 = 4 号 */
-  if (chassis_init_result[0] != OK) return chassis_init_result[0];
+  if (chassis_init_result[0] != OK) {
+    LOG_ERROR("底盘计算", "VT13 左前电机初始化失败，错误码=%d",
+              (int)chassis_init_result[0]);
+    return chassis_init_result[0];
+  }
 
   chassis_init_result[1] =
       dj_motor_init(&chassis_motors[CHASSIS_MOTOR_FR], &chassis_bus,
                     DJ_MOTOR_M3508, 3, false); /* 右前轮 = 3 号 */
-  if (chassis_init_result[1] != OK) return chassis_init_result[1];
+  if (chassis_init_result[1] != OK) {
+    LOG_ERROR("底盘计算", "VT13 右前电机初始化失败，错误码=%d",
+              (int)chassis_init_result[1]);
+    return chassis_init_result[1];
+  }
 
   chassis_init_result[2] =
       dj_motor_init(&chassis_motors[CHASSIS_MOTOR_RL], &chassis_bus,
                     DJ_MOTOR_M3508, 2, false); /* 左后轮 = 2 号 */
-  if (chassis_init_result[2] != OK) return chassis_init_result[2];
+  if (chassis_init_result[2] != OK) {
+    LOG_ERROR("底盘计算", "VT13 左后电机初始化失败，错误码=%d",
+              (int)chassis_init_result[2]);
+    return chassis_init_result[2];
+  }
 
   chassis_init_result[3] =
       dj_motor_init(&chassis_motors[CHASSIS_MOTOR_RR], &chassis_bus,
                     DJ_MOTOR_M3508, 1, false); /* 右后轮 = 1 号 */
-  if (chassis_init_result[3] != OK) return chassis_init_result[3];
+  if (chassis_init_result[3] != OK) {
+    LOG_ERROR("底盘计算", "VT13 右后电机初始化失败，错误码=%d",
+              (int)chassis_init_result[3]);
+    return chassis_init_result[3];
+  }
 
+  LOG_INFO("底盘计算", "VT13 底盘 CAN 和四个电机初始化完成");
   return OK;
 }
 
@@ -102,6 +125,7 @@ void chassis_speed_pid_init(void) {
                                 12000.0f);
   chassis_speed_pid_init_single(&pid_speed[CHASSIS_MOTOR_RR], 14.0f, 2.0f, 0.0f,
                                 12000.0f);
+  LOG_INFO("底盘计算", "VT13 底盘速度环 PID 初始化完成");
 }
 
 static void chassis_motor_pid_control_speed(uint8_t motor_index,
@@ -186,16 +210,32 @@ static void chassis_control(void) {
 }
 
 void Chassis_Mode(void) {
+  static uint8_t last_mode = 0xFFU;
+  uint8_t mode = 0U;
   /* 接收机掉线：底盘必须停止 */
   if ((vt13 == NULL) || !vt13->online_) {
+    if (last_mode != mode) {
+      LOG_WARN("底盘计算", "VT13 遥控器离线，底盘停止");
+      last_mode = mode;
+    }
     chassis_stop();
     return;
   }
 
   if (vt13->cmd.mode_sw == vt13_CMD_SW_MID) {
+    mode = 1U;
+    if (last_mode != mode) {
+      LOG_INFO("底盘计算", "VT13 进入正常底盘控制模式");
+      last_mode = mode;
+    }
     chassis_control();
 
   } else {
+    mode = 2U;
+    if (last_mode != mode) {
+      LOG_WARN("底盘计算", "VT13 档位非中位，底盘停止");
+      last_mode = mode;
+    }
     /* UP/DOWN 或异常状态：安全停止 */
     chassis_stop();
   }

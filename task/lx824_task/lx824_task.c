@@ -1,4 +1,5 @@
 #include "lx824_task.h"
+#include "bsp_log.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -28,6 +29,7 @@ static volatile bool g_servo_id_valid = false;
 void lx824_task(void* argument) {
   RM_UNUSED(argument);
 
+  LOG_INFO("LX824任务", "任务开始初始化舵机总线");
   // 舵机串行总线当前保持使用 UART1（huart2=DR16）
   static LX824_t lx824_instance;  // 静态存储，保证任务整个生命周期内有效。
   err_t status = LX824_Init(&lx824_instance, &huart1);
@@ -40,9 +42,16 @@ void lx824_task(void* argument) {
   }
   ASSERT(status == OK);
   if (status != OK) {
+    LOG_ERROR("LX824任务", "舵机总线启动失败，错误码=%d", (int)status);
     vTaskDelete(NULL);
     return;
   }
+
+  LOG_INFO("LX824任务", "舵机总线已启动，开始轮询舵机 ID");
+
+  err_t last_id_error = PENDING;
+  uint8_t last_servo_id = 0U;
+  bool last_servo_id_valid = false;
 
   for (;;) {
     uint8_t servo_id = 0U;
@@ -54,7 +63,16 @@ void lx824_task(void* argument) {
       g_servo_id_valid = true;
       debug_lx824_servo_id = servo_id;
       debug_lx824_servo_id_valid = 1U;
+      if (!last_servo_id_valid || last_servo_id != servo_id) {
+        LOG_INFO("LX824任务", "读取到舵机 ID=%u", (unsigned)servo_id);
+      }
+      last_servo_id = servo_id;
+      last_servo_id_valid = true;
+    } else if (err != last_id_error) {
+      LOG_WARN("LX824任务", "读取舵机 ID 失败，错误码=%d", (int)err);
+      last_servo_id_valid = false;
     }
+    last_id_error = err;
 
     vTaskDelay(pdMS_TO_TICKS(LX824_TASK_POLL_INTERVAL_MS));
   }

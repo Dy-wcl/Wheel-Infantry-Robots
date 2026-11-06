@@ -3,6 +3,7 @@
  * @brief 底盘控制任务实现
  */
 #include "chassis_task.h"
+#include "bsp_log.h"
 
 #include "FreeRTOS.h"
 #include "chassis_control.h"
@@ -24,11 +25,13 @@ volatile err_t chassis_status = PENDING;
 void chassis_task(void* argument) {
   RM_UNUSED(argument);
 
+  LOG_INFO("底盘任务", "任务开始初始化底盘控制");
   /* CAN2 及底盘电机已由 main.c 完成注册和启动。 */
   chassis_status = OK;
 
   /* 初始化底盘电机速度环 PID */
   chassis_speed_pid_init();
+  LOG_INFO("底盘任务", "底盘速度环 PID 已初始化");
 
   /* 主控制循环 */
   while (1) {

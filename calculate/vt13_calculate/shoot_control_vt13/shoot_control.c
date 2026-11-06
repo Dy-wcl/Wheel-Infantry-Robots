@@ -3,6 +3,7 @@
  * @brief 发射机构控制实现 (VT13 遥控器)
  */
 #include "shoot_control.h"
+#include "bsp_log.h"
 
 #include <math.h>
 #include <stdbool.h>
@@ -33,21 +34,26 @@ static PIDInstance_jie pid_location;
  * @return OK 或错误码
  */
 err_t shoot_control_init(void) {
+  LOG_INFO("发射计算", "开始初始化 VT13 发射 CAN 总线和电机");
   /* 获取 CAN1 的 BSP 对象（假设 CAN1 用于发射机构，与云台同总线）
    * CAN2 上底盘已占用 0x200 控制组的 1-4 号电机，发射机构不能复用同组 ID */
   BSP_CAN_t can_id = BSP_CAN_get_id(CAN1);
   if (can_id == BSP_CAN_ID_ERROR) {
+    LOG_ERROR("发射计算", "未找到 VT13 发射 CAN1 对象");
     return NOT_FOUND;
   }
 
   STM32CAN_t* can1 = STM32CAN_GetInstance(can_id);
   if (can1 == NULL) {
+    LOG_ERROR("发射计算", "VT13 发射 CAN1 控制块为空");
     return PTR_NULL;
   }
 
   /* 初始化发射机构总线 */
   shoot_bus_init_result = dj_motor_bus_init(&shoot_bus, can1);
   if (shoot_bus_init_result != OK) {
+    LOG_ERROR("发射计算", "VT13 发射总线初始化失败，错误码=%d",
+              (int)shoot_bus_init_result);
     return shoot_bus_init_result;
   }
 
@@ -60,18 +66,31 @@ err_t shoot_control_init(void) {
   shoot_init_result[0] =
       dj_motor_init(&shoot_motors[0], &shoot_bus, DJ_MOTOR_M3508, 1,
                     false); /* 左摩擦轮 = 1 号 */
-  if (shoot_init_result[0] != OK) return shoot_init_result[0];
+  if (shoot_init_result[0] != OK) {
+    LOG_ERROR("发射计算", "VT13 左摩擦轮初始化失败，错误码=%d",
+              (int)shoot_init_result[0]);
+    return shoot_init_result[0];
+  }
 
   shoot_init_result[1] =
       dj_motor_init(&shoot_motors[1], &shoot_bus, DJ_MOTOR_M3508, 2,
                     false); /* 右摩擦轮 = 2 号 */
-  if (shoot_init_result[1] != OK) return shoot_init_result[1];
+  if (shoot_init_result[1] != OK) {
+    LOG_ERROR("发射计算", "VT13 右摩擦轮初始化失败，错误码=%d",
+              (int)shoot_init_result[1]);
+    return shoot_init_result[1];
+  }
 
   shoot_init_result[2] =
       dj_motor_init(&shoot_motors[2], &shoot_bus, DJ_MOTOR_M2006, 3,
                     false); /* 拨弹电机 = 3 号 */
-  if (shoot_init_result[2] != OK) return shoot_init_result[2];
+  if (shoot_init_result[2] != OK) {
+    LOG_ERROR("发射计算", "VT13 拨弹电机初始化失败，错误码=%d",
+              (int)shoot_init_result[2]);
+    return shoot_init_result[2];
+  }
 
+  LOG_INFO("发射计算", "VT13 发射 CAN 和三台电机初始化完成");
   return OK;
 }
 
@@ -96,6 +115,7 @@ void shoot_speed_pid_init(void) {
       &pid_location, 8.0f, 0.0f, 0.0f, 0.0002f, 3000.0f, 1000.0f, 0.0f,
       PID_INC_INTEGRAL_LIMIT | PID_INC_DERIVATIVE_ON_MEASUREMENT |
           PID_INC_OUTPUT_FILTER | PID_INC_DERIVATIVE_FILTER);
+  LOG_INFO("发射计算", "VT13 发射 PID 初始化完成");
 }
 void dj_motor_pid_control_location(uint8_t motor_id, float target_angle) {
   dj_motor_feedback_t feedback;
@@ -132,9 +152,23 @@ static void shoot_stop(void) {
 }
 
 void Shoot_Mode(void) {
+  static bool offline_logged = false;
   if ((vt13 == NULL) || !vt13->online_) {
+    if (!offline_logged) {
+      LOG_WARN("发射计算", "VT13 遥控器离线，发射机构停止");
+      offline_logged = true;
+    }
     shoot_stop();
     return;
   }
+  if (offline_logged) {
+    LOG_INFO("发射计算", "VT13 遥控器恢复在线");
+    offline_logged = false;
+  }
   // TODO: 根据VT13遥控器按键状态实现发射模式控制逻辑
+  static bool warning_logged = false;
+  if (!warning_logged) {
+    LOG_WARN("发射计算", "VT13 发射模式控制尚未实现");
+    warning_logged = true;
+  }
 }

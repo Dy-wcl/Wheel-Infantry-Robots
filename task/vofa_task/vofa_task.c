@@ -1,4 +1,5 @@
 #include "vofa_task.h"
+#include "bsp_log.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -18,6 +19,8 @@ float data[3] = {0.0f, 0.0f, 0.0f};
 
 //! 模块内部回调桥接：让 Vofa 驱动保持通用，任务层决定命令如何影响业务数据。
 static void OnVofaCommand(const char* name, float value) {
+  LOG_DEBUG("VOFA任务", "收到参数 name=%s value=%.3f",
+            name != NULL ? name : "<空>", (double)value);
   VofaTask_OnCommand(name, value);
 }
 
@@ -55,6 +58,7 @@ __attribute__((weak)) void VofaTask_OnCommand(const char* name, float value) {
 void vofa_task(void* argument) {
   RM_UNUSED(argument);
 
+  LOG_INFO("VOFA任务", "任务开始初始化 VOFA 串口");
   static Vofa_t vofa;  // 静态存储，保证任务整个生命周期内有效。
   err_t status = Vofa_Init(&vofa, &huart6);
   vofa.thread_alert = xTaskGetCurrentTaskHandle();
@@ -65,9 +69,12 @@ void vofa_task(void* argument) {
   }
   ASSERT(status == OK);
   if (status != OK) {
+    LOG_ERROR("VOFA任务", "VOFA 启动失败，错误码=%d", (int)status);
     vTaskDelete(NULL);
     return;
   }
+
+  LOG_INFO("VOFA任务", "VOFA 已启动，进入收发循环");
 
   for (;;) {
     (void)Vofa_Send(&vofa, data,

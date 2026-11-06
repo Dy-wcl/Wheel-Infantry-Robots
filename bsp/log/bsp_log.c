@@ -146,6 +146,13 @@ static bool BSPLogStartsWithIgnoreCase(const char *value, const char *prefix) {
   return *prefix == '\0';
 }
 
+/** @brief 去除命令字符串首尾的空白字符。
+ *
+ * @param[in] command 要处理的命令字符串。
+ * @return 指向去除首尾空白后的字符串的指针。
+ * @note 该函数会去除命令字符串首尾的空格和制表符，并在末尾添加 '\0' 终止符。
+ *
+ */
 static char *BSPLogTrimCommand(char *command) {
   char *first = command;
   char *last;
@@ -199,7 +206,7 @@ static err_t BSPLogParseLevelCommand(const char *command,
 }
 
 /**
- * @brief Applies the complete textual log-level command in the shared buffer.
+ * @brief 解析上位机
  *
  * Terminates the buffered command, trims surrounding whitespace, parses the
  * `log level <name>` form, and applies the resulting log level. The buffered

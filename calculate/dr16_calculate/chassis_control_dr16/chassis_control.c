@@ -3,6 +3,7 @@
  * @brief 麦克纳姆轮底盘控制实现
  */
 #include "chassis_control.h"
+#include "bsp_log.h"
 
 #include <math.h>
 #include <stdbool.h>
@@ -39,17 +40,20 @@ static float torque_ff_current[4];
  * @return OK 或错误码
  */
 err_t chassis_control_init(void) {
+  LOG_INFO("底盘计算", "开始初始化底盘 CAN 总线和电机");
   /* 获取 CAN2 的 BSP 对象（假设 CAN2 用于底盘） */
   ASSERT(CAN2 != NULL);
   BSP_CAN_t can_id = BSP_CAN_get_id(CAN2);
   ASSERT(can_id != BSP_CAN_ID_ERROR);
   if (can_id == BSP_CAN_ID_ERROR) {
+    LOG_ERROR("底盘计算", "未找到 CAN2 对象");
     return NOT_FOUND;
   }
 
   STM32CAN_t* can2 = STM32CAN_GetInstance(can_id);
   ASSERT(can2 != NULL);
   if (can2 == NULL) {
+    LOG_ERROR("底盘计算", "CAN2 控制块为空");
     return PTR_NULL;
   }
 
@@ -57,6 +61,8 @@ err_t chassis_control_init(void) {
   chassis_bus_init_result = dj_motor_bus_init(&chassis_bus, can2);
   VERIFY(chassis_bus_init_result == OK);
   if (chassis_bus_init_result != OK) {
+    LOG_ERROR("底盘计算", "底盘 CAN 总线初始化失败，错误码=%d",
+              (int)chassis_bus_init_result);
     return chassis_bus_init_result;
   }
 
@@ -71,26 +77,43 @@ err_t chassis_control_init(void) {
       dj_motor_init(&chassis_motors[CHASSIS_MOTOR_FL], &chassis_bus,
                     DJ_MOTOR_M3508, 4, false); /* 左前轮 = 4 号 */
   VERIFY(chassis_init_result[0] == OK);
-  if (chassis_init_result[0] != OK) return chassis_init_result[0];
+  if (chassis_init_result[0] != OK) {
+    LOG_ERROR("底盘计算", "左前电机初始化失败，错误码=%d",
+              (int)chassis_init_result[0]);
+    return chassis_init_result[0];
+  }
 
   chassis_init_result[1] =
       dj_motor_init(&chassis_motors[CHASSIS_MOTOR_FR], &chassis_bus,
                     DJ_MOTOR_M3508, 3, false); /* 右前轮 = 3 号 */
   VERIFY(chassis_init_result[1] == OK);
-  if (chassis_init_result[1] != OK) return chassis_init_result[1];
+  if (chassis_init_result[1] != OK) {
+    LOG_ERROR("底盘计算", "右前电机初始化失败，错误码=%d",
+              (int)chassis_init_result[1]);
+    return chassis_init_result[1];
+  }
 
   chassis_init_result[2] =
       dj_motor_init(&chassis_motors[CHASSIS_MOTOR_RL], &chassis_bus,
                     DJ_MOTOR_M3508, 2, false); /* 左后轮 = 2 号 */
   VERIFY(chassis_init_result[2] == OK);
-  if (chassis_init_result[2] != OK) return chassis_init_result[2];
+  if (chassis_init_result[2] != OK) {
+    LOG_ERROR("底盘计算", "左后电机初始化失败，错误码=%d",
+              (int)chassis_init_result[2]);
+    return chassis_init_result[2];
+  }
 
   chassis_init_result[3] =
       dj_motor_init(&chassis_motors[CHASSIS_MOTOR_RR], &chassis_bus,
                     DJ_MOTOR_M3508, 1, false); /* 右后轮 = 1 号 */
   VERIFY(chassis_init_result[3] == OK);
-  if (chassis_init_result[3] != OK) return chassis_init_result[3];
+  if (chassis_init_result[3] != OK) {
+    LOG_ERROR("底盘计算", "右后电机初始化失败，错误码=%d",
+              (int)chassis_init_result[3]);
+    return chassis_init_result[3];
+  }
 
+  LOG_INFO("底盘计算", "底盘 CAN 和四个电机初始化完成");
   return OK;
 }
 
@@ -119,6 +142,7 @@ void chassis_speed_pid_init(void) {
     VERIFY(pid_device_init(&chassis_pid_devices[i], &chassis_motors[i],
                            PID_DEVICE_POSITIONAL, &pid_speed[i], NULL) == OK);
   }
+  LOG_INFO("底盘计算", "四个底盘速度环 PID 初始化完成");
 }
 
 pid_device_t* chassis_get_pid_device(uint8_t motor_index) {
@@ -235,18 +259,40 @@ static void chassis_small_gyro_control(void) {
 }
 
 void Chassis_Mode(void) {
+  static uint8_t last_mode = 0xFFU;
+  uint8_t mode = 0U;
   /* 接收机掉线：底盘必须停止 */
   if ((dr16 == NULL) || !dr16->online_) {
+    mode = 0U;
+    if (mode != last_mode) {
+      LOG_WARN("底盘计算", "遥控器离线，底盘进入停止模式");
+      last_mode = mode;
+    }
     chassis_stop();
     return;
   }
 
   if (dr16->dr16_cmd.sw_l == CMD_SW_MID) {
+    mode = 1U;
+    if (mode != last_mode) {
+      LOG_INFO("底盘计算", "进入正常底盘控制模式");
+      last_mode = mode;
+    }
     chassis_control();
 
   } else if (dr16->dr16_cmd.sw_l == CMD_SW_DOWN) {
+    mode = 2U;
+    if (mode != last_mode) {
+      LOG_INFO("底盘计算", "进入小陀螺模式");
+      last_mode = mode;
+    }
     chassis_small_gyro_control();
   } else {
+    mode = 3U;
+    if (mode != last_mode) {
+      LOG_WARN("底盘计算", "档位异常或处于 UP，底盘停止");
+      last_mode = mode;
+    }
     /* UP 或异常状态：安全停止 */
     chassis_stop();
   }

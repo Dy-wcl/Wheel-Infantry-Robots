@@ -1,4 +1,5 @@
 #include "version_task.h"
+#include "bsp_log.h"
 
 #include "FreeRTOS.h"
 #include "comp_utils.h"

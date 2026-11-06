@@ -3,6 +3,7 @@
  * @brief 发射控制任务实现
  */
 #include "shoot_task.h"
+#include "bsp_log.h"
 
 #include "FreeRTOS.h"
 #include "comp_utils.h"
@@ -24,11 +25,13 @@ volatile err_t shoot_status = PENDING;
 void shoot_task(void* argument) {
   RM_UNUSED(argument);
 
+  LOG_INFO("发射任务", "任务开始初始化发射控制");
   /* CAN2 及发射电机已由 main.c 完成注册和启动。 */
   shoot_status = OK;
 
   /* 初始化发射电机速度环 PID */
   shoot_speed_pid_init();
+  LOG_INFO("发射任务", "发射机构 PID 已初始化");
 
   /* 主控制循环 */
   while (1) {

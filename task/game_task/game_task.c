@@ -1,4 +1,5 @@
 #include "game_task.h"
+#include "bsp_log.h"
 
 #include "FreeRTOS.h"
 #include "comp_utils.h"
@@ -15,6 +16,7 @@ Game_t* game = NULL;
 void game_task(void* argument) {
   RM_UNUSED(argument);
 
+  LOG_INFO("裁判任务", "任务开始初始化裁判系统");
   static Game_t game_instance;  // 静态存储，保证任务整个生命周期内有效。
   remote_control_data_init();
 
@@ -28,9 +30,12 @@ void game_task(void* argument) {
   }
   ASSERT(status == OK);
   if (status != OK) {
+    LOG_ERROR("裁判任务", "裁判系统启动失败，错误码=%d", (int)status);
     vTaskDelete(NULL);
     return;
   }
+
+  LOG_INFO("裁判任务", "裁判系统已启动，进入数据更新循环");
 
   for (;;) {
     Game_Update(

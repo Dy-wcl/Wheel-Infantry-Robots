@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include "bsp_log.h"
 
 #include "FreeRTOS.h"
 #include "comp_utils.h"
@@ -13,6 +14,7 @@ DR16_t* dr16 = NULL;
 void dr16_task(void* argument) {
   RM_UNUSED(argument);
 
+  LOG_INFO("DR16任务", "任务开始初始化遥控器");
   static DR16_t dr16_instance;  // 静态存储，保证任务整个生命周期内有效。
   err_t status = DR16_Init(&dr16_instance, &huart2);
   dr16 = &dr16_instance;
@@ -24,9 +26,12 @@ void dr16_task(void* argument) {
   }
   ASSERT(status == OK);
   if (status != OK) {
+    LOG_ERROR("DR16任务", "遥控器启动失败，错误码=%d", (int)status);
     vTaskDelete(NULL);
     return;
   }
+
+  LOG_INFO("DR16任务", "遥控器已启动，进入数据更新循环");
 
   for (;;) {
     DR16_Update(dr16,

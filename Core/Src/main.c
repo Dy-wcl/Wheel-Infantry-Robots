@@ -110,9 +110,9 @@ int main(void) {
   MX_RNG_Init();
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
+  (void)BSPLogInit();
   can_device_Init();
   DWT_Init(168);
-  (void)BSPLogInit();
   /* USER CODE END 2 */
 
   /* Init scheduler */

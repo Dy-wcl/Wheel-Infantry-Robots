@@ -3,6 +3,7 @@
  * @brief 云台控制任务实现
  */
 #include "gimbal_task.h"
+#include "bsp_log.h"
 
 #include "FreeRTOS.h"
 #include "comp_utils.h"
@@ -24,11 +25,13 @@ volatile err_t gimbal_status = PENDING;
 void gimbal_task(void* argument) {
   RM_UNUSED(argument);
 
+  LOG_INFO("云台任务", "任务开始初始化云台控制");
   /* CAN2 及云台电机已由 main.c 完成注册和启动。 */
   gimbal_status = OK;
 
   /* 初始化云台电机速度环 PID */
   gimbal_speed_pid_init();
+  LOG_INFO("云台任务", "云台 PID 已初始化");
 
   /* 主控制循环 */
   while (1) {
