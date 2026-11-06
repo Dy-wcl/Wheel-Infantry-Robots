@@ -99,51 +99,36 @@ static err_t BSPLogValidateLevel(bsp_log_level_t level) {
 }
 
 #if BSP_LOG_ENABLED
-static bool BSPLogEqualIgnoreCase(const char *left, const char *right) {
-  while (*left != '\0' && *right != '\0') {
-    char left_char = *left;
-    char right_char = *right;
-    if (left_char >= 'a' && left_char <= 'z') {
-      left_char = (char)(left_char - ('a' - 'A'));
-    }
-    if (right_char >= 'a' && right_char <= 'z') {
-      right_char = (char)(right_char - ('a' - 'A'));
-    }
-    if (left_char != right_char) {
-      return false;
-    }
-    ++left;
-    ++right;
-  }
-  return *left == '\0' && *right == '\0';
-}
-
 /**
- * @brief 检查 value 是否以 prefix 开头，忽略大小写。
+ * @brief 比较两个字符串，忽略大小写。
  *
  * @param[in] value 要判断的字符串
- * @param[in] prefix 需要匹配的字符串
- * @return 如果 value 以 prefix 开头，返回 true；否则返回 false。
- * @note 仅在调用期间借用输入字符串；不修改输入内容。
+ * @param[in] pattern 需要匹配的字符串
+ * @param[in] exact_match 是否要求 value 在匹配后立即结束
+ * @return 匹配成功返回 true；否则返回 false。
+ * @note exact_match为 true 时，要求 value 与 pattern 完全匹配。
+ *       exact_match为 false 时,只要求 value 以 pattern 开头。
  */
-static bool BSPLogStartsWithIgnoreCase(const char *value, const char *prefix) {
-  /*在前缀和输入字符串没有结果前逐字符比较*/
-  while (*prefix != '\0' && *value != '\0') {
+static bool BSPLogMatchIgnoreCase(const char *value, const char *pattern,
+                                  bool exact_match) {
+  while (*pattern != '\0' && *value != '\0') {
     char value_char = *value++;
-    char prefix_char = *prefix++;
-    /* 将小写字母转换为大写字母进行比较 */
+    char pattern_char = *pattern++;
     if (value_char >= 'a' && value_char <= 'z') {
       value_char = (char)(value_char - ('a' - 'A'));
     }
-    if (prefix_char >= 'a' && prefix_char <= 'z') {
-      prefix_char = (char)(prefix_char - ('a' - 'A'));
+    if (pattern_char >= 'a' && pattern_char <= 'z') {
+      pattern_char = (char)(pattern_char - ('a' - 'A'));
     }
-    if (value_char != prefix_char) {
+    if (value_char != pattern_char) {
       return false;
     }
   }
-  /*需要与prefix完全匹配*/
-  return *prefix == '\0';
+
+  if (*pattern != '\0') {
+    return false;
+  }
+  return !exact_match || *value == '\0';
 }
 
 /** @brief 去除命令字符串首尾的空白字符。
@@ -186,7 +171,7 @@ static err_t BSPLogParseLevelCommand(const char *command,
   size_t index;
 
   /* 判断命令格式是否符合log level */
-  if (!BSPLogStartsWithIgnoreCase(command, "log level") ||
+  if (!BSPLogMatchIgnoreCase(command, "log level", false) ||
       (command[9] != ' ' && command[9] != '\t')) {
     return ARG_ERR;
   }
@@ -196,7 +181,7 @@ static err_t BSPLogParseLevelCommand(const char *command,
   }
 
   for (index = 0u; index < ARRAY_LEN(names); ++index) {
-    if (BSPLogEqualIgnoreCase(value, names[index])) {
+    if (BSPLogMatchIgnoreCase(value, names[index], true)) {
       *level = (bsp_log_level_t)index;
       return OK;
     }
