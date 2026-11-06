@@ -127,6 +127,14 @@ __attribute__((naked)) void HardFault_Handler(void)
 
 __attribute__((noinline, used)) void HardFault_Capture(
     const uint32_t *stack_frame, uint32_t exc_return) {
+  /* EXC_RETURN bit 4 clear means the interrupted context saved the
+   * callee-saved FPU registers first.  The core frame (R0..xPSR) therefore
+   * starts 18 words after the address selected by the naked wrapper. */
+  const uint32_t *core_frame = stack_frame;
+  if ((exc_return & (1UL << 4)) == 0U) {
+    core_frame += 18U;
+  }
+
   hardfault_exc_return = exc_return;
   hardfault_cfsr = SCB->CFSR;
   hardfault_hfsr = SCB->HFSR;
@@ -136,7 +144,7 @@ __attribute__((noinline, used)) void HardFault_Capture(
   hardfault_bfar = SCB->BFAR;
 
   for (uint32_t index = 0U; index < 8U; ++index) {
-    hardfault_stack_frame[index] = stack_frame[index];
+    hardfault_stack_frame[index] = core_frame[index];
   }
 
   __disable_irq();

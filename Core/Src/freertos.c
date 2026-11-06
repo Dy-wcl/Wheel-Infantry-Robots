@@ -23,11 +23,11 @@
 #include "main.h"
 #include "task.h"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "iwdg.h"
 #include "bsp_log.h"
+#include "iwdg.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,15 +52,14 @@
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
     .name = "defaultTask",
-    .stack_size = 128 * 4,
+    /* BSPLogVWrite() has a 512-byte local line buffer. */
+    .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityNormal,
 };
 /* Definitions for dr16 */
 osThreadId_t dr16Handle;
 const osThreadAttr_t dr16_attributes = {
     .name = "dr16",
-    /* Keep room for bsp_log's private 512-byte line buffer and libc
-     * floating-point formatting and its callees. */
     .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityHigh,
 };
@@ -68,42 +67,42 @@ const osThreadAttr_t dr16_attributes = {
 osThreadId_t vt13Handle;
 const osThreadAttr_t vt13_attributes = {
     .name = "vt13",
-    .stack_size = 128 * 4,
+    .stack_size = 256 * 4,
     .priority = (osPriority_t)osPriorityHigh,
 };
 /* Definitions for vofa */
 osThreadId_t vofaHandle;
 const osThreadAttr_t vofa_attributes = {
     .name = "vofa",
-    .stack_size = 256 * 4,
+    .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
 /* Definitions for imu_can */
 osThreadId_t imu_canHandle;
 const osThreadAttr_t imu_can_attributes = {
     .name = "imu_can",
-    .stack_size = 128 * 4,
+    .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityHigh,
 };
 /* Definitions for lx824 */
 osThreadId_t lx824Handle;
 const osThreadAttr_t lx824_attributes = {
     .name = "lx824",
-    .stack_size = 256 * 4,
+    .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
 /* Definitions for i6X */
 osThreadId_t i6XHandle;
 const osThreadAttr_t i6X_attributes = {
     .name = "i6X",
-    .stack_size = 128 * 4,
+    .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityHigh,
 };
 /* Definitions for imu_485 */
 osThreadId_t imu_485Handle;
 const osThreadAttr_t imu_485_attributes = {
     .name = "imu_485",
-    .stack_size = 128 * 4,
+    .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityHigh,
 };
 /* Definitions for gimbal */
@@ -117,21 +116,21 @@ const osThreadAttr_t gimbal_attributes = {
 osThreadId_t chassisHandle;
 const osThreadAttr_t chassis_attributes = {
     .name = "chassis",
-    .stack_size = 256 * 4,
+    .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
 /* Definitions for game */
 osThreadId_t gameHandle;
 const osThreadAttr_t game_attributes = {
     .name = "game",
-    .stack_size = 256 * 4,
+    .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
 /* Definitions for shoot */
 osThreadId_t shootHandle;
 const osThreadAttr_t shoot_attributes = {
     .name = "shoot",
-    .stack_size = 256 * 4,
+    .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityLow7,
 };
 /* Definitions for super_power */
@@ -151,7 +150,10 @@ const osThreadAttr_t version_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+/* Visible to J-Link/GDB after a FreeRTOS hook stops the CPU. */
+volatile signed char *freertos_stack_overflow_task_name;
+volatile uint32_t freertos_stack_overflow_detected;
+volatile uint32_t freertos_malloc_failed_detected;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -176,11 +178,6 @@ void configureTimerForRunTimeStats(void);
 unsigned long getRunTimeCounterValue(void);
 void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
 void vApplicationMallocFailedHook(void);
-
-/* Visible to J-Link/GDB after a FreeRTOS hook stops the CPU. */
-volatile signed char *freertos_stack_overflow_task_name;
-volatile uint32_t freertos_stack_overflow_detected;
-volatile uint32_t freertos_malloc_failed_detected;
 
 /* USER CODE BEGIN 1 */
 /* Functions needed when configGENERATE_RUN_TIME_STATS is on */

@@ -11,6 +11,8 @@
  * 下标范围为 [0, BSP_CAN_NUMBER)。
  */
 static STM32CAN_t* stm32_can_map[BSP_CAN_NUMBER] = {0};
+/* 每条 CAN 总线的发送故障只报告一次；成功发送后清除故障标记。 */
+static uint8_t bsp_can_tx_fault_reported;
 
 /**
  * @brief 硬件外设基址 → 逻辑 CAN ID
@@ -308,12 +310,31 @@ err_t STM32CAN_Send(STM32CAN_t* self, uint32_t std_id, const uint8_t* data,
   self->last_error_ =
       BSP_CAN_send_std_data(self->can_handle_, std_id, data, size);
   if (self->last_error_ == OK) {
+    if ((unsigned)self->id_ < BSP_CAN_NUMBER) {
+      const uint8_t fault_bit = (uint8_t)(1U << (unsigned)self->id_);
+      if ((bsp_can_tx_fault_reported & fault_bit) != 0U) {
+        bsp_can_tx_fault_reported =
+            (uint8_t)(bsp_can_tx_fault_reported & (uint8_t)~fault_bit);
+        LOG_INFO("CAN", "CAN%u 发送已恢复", (unsigned)self->id_);
+      }
+    }
     LOG_DEBUG("CAN", "CAN%u TX id=0x%03lX size=%u", (unsigned)self->id_,
               (unsigned long)std_id, (unsigned)size);
   } else {
-    LOG_WARN("CAN", "CAN%u TX failed id=0x%03lX size=%u err=%d",
-             (unsigned)self->id_, (unsigned long)std_id, (unsigned)size,
-             (int)self->last_error_);
+    bool should_report = true;
+    if ((unsigned)self->id_ < BSP_CAN_NUMBER) {
+      const uint8_t fault_bit = (uint8_t)(1U << (unsigned)self->id_);
+      should_report = (bsp_can_tx_fault_reported & fault_bit) == 0U;
+      if (should_report) {
+        bsp_can_tx_fault_reported =
+            (uint8_t)(bsp_can_tx_fault_reported | fault_bit);
+      }
+    }
+    if (should_report) {
+      LOG_WARN("CAN", "CAN%u TX 首次失败 id=0x%03lX size=%u err=%d",
+               (unsigned)self->id_, (unsigned long)std_id, (unsigned)size,
+               (int)self->last_error_);
+    }
   }
   return self->last_error_;
 }
