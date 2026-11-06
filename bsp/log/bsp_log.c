@@ -85,6 +85,15 @@ static err_t BSPLogRecordResult(err_t result) {
   return result;
 }
 
+/**
+ * @brief 验证日志等级是否在有效范围内。
+ *
+ * @param[in] level 要验证的日志等级。
+ * @return 验证结果，具体取值如下。
+ * @retval OK 等级有效。
+ * @retval ARG_ERR 等级无效。
+ * @note 该函数不修改已保存的错误状态。
+ */
 static err_t BSPLogValidateLevel(bsp_log_level_t level) {
   return ((unsigned)level < BSP_LOG_LEVEL_COUNT) ? OK : ARG_ERR;
 }
@@ -109,11 +118,20 @@ static bool BSPLogEqualIgnoreCase(const char *left, const char *right) {
   return *left == '\0' && *right == '\0';
 }
 
-static bool BSPLogStartsWithIgnoreCase(const char *value,
-                                       const char *prefix) {
-  while (*prefix != '\0') {
+/**
+ * @brief 检查 value 是否以 prefix 开头，忽略大小写。
+ *
+ * @param[in] value 要判断的字符串
+ * @param[in] prefix 需要匹配的字符串
+ * @return 如果 value 以 prefix 开头，返回 true；否则返回 false。
+ * @note 仅在调用期间借用输入字符串；不修改输入内容。
+ */
+static bool BSPLogStartsWithIgnoreCase(const char *value, const char *prefix) {
+  /*在前缀和输入字符串没有结果前逐字符比较*/
+  while (*prefix != '\0' && *value != '\0') {
     char value_char = *value++;
     char prefix_char = *prefix++;
+    /* 将小写字母转换为大写字母进行比较 */
     if (value_char >= 'a' && value_char <= 'z') {
       value_char = (char)(value_char - ('a' - 'A'));
     }
@@ -124,7 +142,8 @@ static bool BSPLogStartsWithIgnoreCase(const char *value,
       return false;
     }
   }
-  return true;
+  /*需要与prefix完全匹配*/
+  return *prefix == '\0';
 }
 
 static char *BSPLogTrimCommand(char *command) {
@@ -141,46 +160,34 @@ static char *BSPLogTrimCommand(char *command) {
   return first;
 }
 
+/** @brief 解析接收到的日志等级命令，根据解析结果设置日志等级
+ *
+ * @param[in] command 接收到的日志等级命令，
+ * @param[out] level The parsed log level.
+ * @return  日志解析结结果，具体取值如下。
+ * @retval OK 解析成功，成功设置日志等级。
+ * @retval ARG_ERR 解析失败，日志等级无效。
+ * @throw None.
+ * @note 日志等级命令格式为 `log level <name>`，其中 `<name>`
+ * 为日志等级名称（TRACE、DEBUG、INFO、WARN、ERROR、FATAL）。
+ */
 static err_t BSPLogParseLevelCommand(const char *command,
                                      bsp_log_level_t *level) {
   static const char *const names[] = {"TRACE", "DEBUG", "INFO",
                                       "WARN",  "ERROR", "FATAL"};
-  const char *value = command;
+  const char *value;
   size_t index;
 
-  if (BSPLogStartsWithIgnoreCase(value, "log_level") &&
-      (value[9] == '\0' || value[9] == ' ' || value[9] == '\t' ||
-       value[9] == '=')) {
-    value += 9;
-    while (*value == ' ' || *value == '\t' || *value == '=') {
-      ++value;
-    }
-  } else if (BSPLogStartsWithIgnoreCase(value, "log level") &&
-             (value[9] == '\0' || value[9] == ' ' || value[9] == '\t' ||
-              value[9] == '=')) {
-    value += 9;
-    while (*value == ' ' || *value == '\t' || *value == '=') {
-      ++value;
-    }
-  } else if (BSPLogStartsWithIgnoreCase(value, "level") &&
-             (value[5] == '\0' || value[5] == ' ' || value[5] == '\t' ||
-              value[5] == '=')) {
-    value += 5;
-    while (*value == ' ' || *value == '\t') {
-      ++value;
-    }
-    if (*value == '=') {
-      ++value;
-      while (*value == ' ' || *value == '\t') {
-        ++value;
-      }
-    }
+  /* 判断命令格式是否符合log level */
+  if (!BSPLogStartsWithIgnoreCase(command, "log level") ||
+      (command[9] != ' ' && command[9] != '\t')) {
+    return ARG_ERR;
+  }
+  value = command + 9;
+  while (*value == ' ' || *value == '\t') {
+    ++value;
   }
 
-  if (value[0] >= '0' && value[0] <= '5' && value[1] == '\0') {
-    *level = (bsp_log_level_t)(value[0] - '0');
-    return OK;
-  }
   for (index = 0u; index < ARRAY_LEN(names); ++index) {
     if (BSPLogEqualIgnoreCase(value, names[index])) {
       *level = (bsp_log_level_t)index;
@@ -191,6 +198,23 @@ static err_t BSPLogParseLevelCommand(const char *command,
   return ARG_ERR;
 }
 
+/**
+ * @brief Applies the complete textual log-level command in the shared buffer.
+ *
+ * Terminates the buffered command, trims surrounding whitespace, parses the
+ * `log level <name>` form, and applies the resulting log level. The buffered
+ * command length is cleared before the function returns.
+ *
+ * @return The command result. Returns `OK` when the parsed level is applied or
+ *         `ARG_ERR` when the command is invalid.
+ * @throws None.
+ * @note The function consumes the command currently stored in
+ *       `level_command_buffer` and resets `level_command_size` even after a
+ *       parse failure.
+ * @warning The caller serializes access to the shared command buffer state.
+ * @since 1.0.1.
+ * @ingroup bsp_log.
+ */
 static err_t BSPLogApplyLevelCommand(void) {
   bsp_log_level_t level;
   char *command;
@@ -215,7 +239,7 @@ static err_t BSPLogWriteRaw(const char *data, size_t size) {
 }
 #endif
 
-NO_THREAD_SAFE_PROMISE err_t BSPLogInit(void) {
+err_t BSPLogInit(void) {
 #if BSP_LOG_ENABLED
   err_t result = OK;
 
@@ -280,11 +304,22 @@ err_t BSPLogGetLevel(bsp_log_level_t *level) {
 
 err_t BSPLogPollLevelCommand(void) {
 #if BSP_LOG_ENABLED
-  char input[8];
+  /*
+   * 这是一次 SEGGER_RTT_Read() 使用的临时块，而不是命令缓冲区。
+   * 8 字节在栈占用、单次轮询工作量和 RTT 吞吐之间取折中；如果本次
+   * 读取恰好填满该块，下面的循环会继续读取下一块，因此不会限制命令
+   * 长度。命令本身的上限由 BSP_LOG_COMMAND_BUFFER_SIZE 控制。
+   */
+  char input[BSP_LOG_COMMAND_READ_BUFFER_SIZE];
   unsigned read_size;
   unsigned index;
   err_t result = PENDING;
 
+  /*
+   * 轮询会访问 RTT 和 FreeRTOS 状态，只允许在线程模式、调度器未挂起、
+   * 且 PRIMASK/BASEPRI 都未屏蔽中断时执行。这样可以避免在临界区或 ISR
+   * 中调用可能依赖锁的 RTT 接口。
+   */
   if (!BSPLogInThreadMode() ||
       xTaskGetSchedulerState() == taskSCHEDULER_SUSPENDED ||
       __get_PRIMASK() != BSP_LOG_PRIMASK_UNMASKED ||
@@ -295,17 +330,13 @@ err_t BSPLogPollLevelCommand(void) {
     return BSPLogRecordResult(INIT_ERR);
   }
 
+  /* RTT 可能一次提供多于临时块大小的数据；读满一块时继续排空通道。 */
   do {
     read_size = SEGGER_RTT_Read(BSP_LOG_CHANNEL_COMMAND, input,
                                 (unsigned)sizeof(input));
     for (index = 0u; index < read_size; ++index) {
       const char byte = input[index];
-      /* 专用下行通道也接受直接发送的等级枚举值，便于上位机脚本控制。 */
-      if (!level_command_overflowed && level_command_size == 0u &&
-          (unsigned char)byte < BSP_LOG_LEVEL_COUNT) {
-        result = BSPLogSetLevel((bsp_log_level_t)(unsigned char)byte);
-        continue;
-      }
+      /* CR/LF 提交当前文本命令；超长命令在结束符处统一报告参数错误。 */
       if (byte == '\r' || byte == '\n') {
         if (level_command_overflowed) {
           level_command_overflowed = false;
@@ -317,9 +348,13 @@ err_t BSPLogPollLevelCommand(void) {
         }
         continue;
       }
+
+      /* 已经溢出的命令必须丢弃到下一个 CR/LF，避免拼接出错误命令。 */
       if (level_command_overflowed) {
         continue;
       }
+
+      /* 为结尾的 NUL 预留一个字节；超出容量后丢弃当前命令剩余内容。 */
       if (level_command_size + 1u >= sizeof(level_command_buffer)) {
         level_command_size = 0u;
         level_command_overflowed = true;

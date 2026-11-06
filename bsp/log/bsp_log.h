@@ -4,8 +4,9 @@
  *
  * @author xiaoshuaijie
  * @date 2026-11-04
- * @version f84ee5c
+ * @version 1.0.1
  * @since 1.0.1
+ *@copyright Copyright(c) 2026, xiaoshuaijie
  */
 
 /**
@@ -34,7 +35,9 @@
 /* 编译开关与 RTT 通道配置 */
 
 #ifndef BSP_LOG_ENABLED
-#define BSP_LOG_ENABLED 0 /**< 编译开关：0 关闭，非零启用；可由外部定义。 */
+#define BSP_LOG_ENABLED   \
+  0 /**< 编译开关：0 \
+       关闭，非零启用；由$<$<CONFIG:Debug>:BSP_LOG_ENABLED>定义。 */
 #endif
 
 #define BSP_LOG_CHANNEL_TERMINAL 0u /**< 上行通道：终端日志。 */
@@ -44,10 +47,16 @@
 
 /* 缓冲区容量与默认等级 */
 
-#define BSP_LOG_COMMAND_BUFFER_SIZE 32u /**< 命令缓冲区容量（字节，包含 NUL）。 */
-#define BSP_LOG_LINE_BUFFER_SIZE 512u /**< 单次行缓冲区容量（字节，包含 NUL）。 */
-#define BSP_LOG_DATA_BUFFER_SIZE 1024u /**< 静态 JScope 上行缓冲区容量（字节）。 */
-#define BSP_LOG_RESERVED_BUFFER_SIZE 256u /**< 静态预留上行缓冲区容量（字节）。 */
+#define BSP_LOG_COMMAND_READ_BUFFER_SIZE \
+  8u /**< 单次轮询从 RTT 下行通道读取的临时块大小（字节）。 */
+#define BSP_LOG_COMMAND_BUFFER_SIZE \
+  32u /**< 命令缓冲区容量（字节，包含 NUL）。 */
+#define BSP_LOG_LINE_BUFFER_SIZE \
+  512u /**< 单次行缓冲区容量（字节，包含 NUL）。 */
+#define BSP_LOG_DATA_BUFFER_SIZE \
+  1024u /**< 静态 JScope 上行缓冲区容量（字节）。 */
+#define BSP_LOG_RESERVED_BUFFER_SIZE \
+  256u /**< 静态预留上行缓冲区容量（字节）。 */
 #define BSP_LOG_DEFAULT_LEVEL BSP_LOG_LEVEL_INFO /**< 初始最低等级：INFO。 */
 
 /* Cortex-M 上下文判定值 */
@@ -72,13 +81,6 @@ typedef enum {
   BSP_LOG_LEVEL_COUNT      /**< 等级数量，不是有效日志等级。 */
 } bsp_log_level_t;
 
-#ifndef NO_THREAD_SAFE_PROMISE
-/**
- * @brief 标记需要由调用方串行化的接口；除非外部定义，否则展开为空。
- */
-#define NO_THREAD_SAFE_PROMISE
-#endif
-
 /* 初始化与日志输出 */
 
 /**
@@ -93,9 +95,9 @@ typedef enum {
  *       重复成功调用会保留缓冲数据和已配置等级。
  *       初始化失败时可在调度器启动前重试。
  *       结果写入启动状态或任务状态；ISR 结果不会更新状态。
- * @warning 要求在调度器启动前单线程初始化；函数不是线程安全的。
+ * @warning 要求在调度器启动前调用此函数完成初始化。
  */
-NO_THREAD_SAFE_PROMISE err_t BSPLogInit(void);
+err_t BSPLogInit(void);
 
 /**
  * @brief 按指定等级格式化并提交带标签的日志记录。
@@ -183,6 +185,8 @@ err_t BSPLogGetLevel(bsp_log_level_t* level);
  *       文本格式：`0` 至 `5`、`TRACE` 至 `FATAL`、`level=<name>`、
  *       `level <name>` 或 `log level <name>`。
  *       不完整输入保留到下次调用；过长行丢弃至下一个结束符。
+ *       每次 RTT 读取块大小由 BSP_LOG_COMMAND_READ_BUFFER_SIZE 配置，默认
+ *       为 8 字节；该值只影响单次读取的栈占用和吞吐折中，不限制命令长度。
  * @warning 应在 BSPLogInit() 后由单个线程周期调用。
  */
 err_t BSPLogPollLevelCommand(void);
@@ -220,9 +224,9 @@ err_t BSPLogClear(void);
  * @name 日志快捷宏
  * @brief 使用固定等级调用 BSPLogWrite()。
  *
- * tag 为非 NULL、NUL 结尾的标签，允许空串；format 为非 NULL 的 printf 格式串。
- * 两者仅在调用期间借用，可变参数须与 format 匹配。
- * 启用时返回 BSPLogWrite() 的结果；关闭时展开为 ((void)0)。
+ * @param[in] tag 为非 NULL、NUL 结尾的标签，允许空串；format 为非 NULL 的
+ * printf 格式串。 两者仅在调用期间借用，可变参数须与 format 匹配。 启用时返回
+ * BSPLogWrite() 的结果；关闭时展开为 ((void)0)。
  * @note 启用时每个参数求值一次，即使记录随后被等级过滤。
  *       关闭时参数不求值，不输出日志，也不更新已保存状态。
  *       需要始终获取返回状态时，请直接调用 BSPLogWrite()。
@@ -230,27 +234,27 @@ err_t BSPLogClear(void);
  * @{
  */
 #if BSP_LOG_ENABLED
-/** @brief 提交 TRACE 记录；公共约定见本组说明。 */
+/** @brief 提交 TRACE 记录；详细信息。 */
 #define LOG_TRACE(tag, format, ...) \
   BSPLogWrite(BSP_LOG_LEVEL_TRACE, (tag), (format), ##__VA_ARGS__)
 
-/** @brief 提交 DEBUG 记录；公共约定见本组说明。 */
+/** @brief 提交 DEBUG 记录；调试信息。 */
 #define LOG_DEBUG(tag, format, ...) \
   BSPLogWrite(BSP_LOG_LEVEL_DEBUG, (tag), (format), ##__VA_ARGS__)
 
-/** @brief 提交 INFO 记录；公共约定见本组说明。 */
+/** @brief 提交 INFO 记录；正常运行信息。 */
 #define LOG_INFO(tag, format, ...) \
   BSPLogWrite(BSP_LOG_LEVEL_INFO, (tag), (format), ##__VA_ARGS__)
 
-/** @brief 提交 WARN 记录；公共约定见本组说明。 */
+/** @brief 提交 WARN 记录；警告信息。 */
 #define LOG_WARN(tag, format, ...) \
   BSPLogWrite(BSP_LOG_LEVEL_WARN, (tag), (format), ##__VA_ARGS__)
 
-/** @brief 提交 ERROR 记录；公共约定见本组说明。 */
+/** @brief 提交 ERROR 记录；错误信息。 */
 #define LOG_ERROR(tag, format, ...) \
   BSPLogWrite(BSP_LOG_LEVEL_ERROR, (tag), (format), ##__VA_ARGS__)
 
-/** @brief 提交 FATAL 记录；公共约定见本组说明。 */
+/** @brief 提交 FATAL 记录；严重错误。 */
 #define LOG_FATAL(tag, format, ...) \
   BSPLogWrite(BSP_LOG_LEVEL_FATAL, (tag), (format), ##__VA_ARGS__)
 #else
@@ -275,7 +279,8 @@ err_t BSPLogClear(void);
  *         str 为 NULL、size 为 0、输入非有限或越界、snprintf 失败时返回 -1。
  * @note 以 0.001 精度取整，中点向远离零方向舍入，取整后的零输出为 0.000。
  *       size 大于 0 且 str 非 NULL 时，即使失败，缓冲区也以 NUL 结尾。
- *       整数部分按 32 位十进制分组以支持 newlib-nano；不读取或修改日志错误状态。
+ *       整数部分按 32 位十进制分组以支持
+ * newlib-nano；不读取或修改日志错误状态。
  * @warning 要求 str 指向至少 size 字节的可写缓冲区，调用上下文满足 libc
  *          格式化要求。
  */
