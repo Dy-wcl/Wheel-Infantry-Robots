@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "bsp_log.h"
+
 // ==================== 对象表与内部工具 ====================
 
 /**
@@ -161,22 +163,26 @@ static err_t BSP_CAN_send_std_data(CAN_HandleTypeDef* can_handle,
  */
 err_t STM32CAN_Init(STM32CAN_t* self, CAN_HandleTypeDef* can_handle) {
   if (self == NULL) {
+    LOG_ERROR("CAN", "Init failed: self is NULL");
     return PTR_NULL;
   }
 
   self->last_error_ = PENDING;
   if ((can_handle == NULL) || (can_handle->Instance == NULL)) {
     self->last_error_ = PTR_NULL;
+    LOG_ERROR("CAN", "Init failed: invalid HAL handle");
     return self->last_error_;
   }
 
   const BSP_CAN_t id = BSP_CAN_get_id(can_handle->Instance);
   if (!BSP_CAN_is_valid_id(id)) {
     self->last_error_ = NOT_FOUND;
+    LOG_ERROR("CAN", "Init failed: unsupported CAN instance");
     return self->last_error_;
   }
   if ((stm32_can_map[id] != NULL) && (stm32_can_map[id] != self)) {
     self->last_error_ = BUSY;
+    LOG_ERROR("CAN", "Init failed: CAN%u already registered", (unsigned)id);
     return self->last_error_;
   }
 
@@ -187,6 +193,7 @@ err_t STM32CAN_Init(STM32CAN_t* self, CAN_HandleTypeDef* can_handle) {
   self->started_ = false;
   stm32_can_map[id] = self;
   self->last_error_ = OK;
+  LOG_INFO("CAN", "Initialized CAN%u", (unsigned)id);
   return self->last_error_;
 }
 
@@ -201,6 +208,7 @@ err_t STM32CAN_Init(STM32CAN_t* self, CAN_HandleTypeDef* can_handle) {
 err_t STM32CAN_SubscribeRx(STM32CAN_t* self, STM32CAN_RxCallback_t callback,
                            void* context) {
   if ((self == NULL) || (callback == NULL)) {
+    LOG_ERROR("CAN", "Subscribe failed: invalid object or callback");
     return PTR_NULL;
   }
   for (uint8_t index = 0U; index < self->subscriber_count_; ++index) {
@@ -208,15 +216,19 @@ err_t STM32CAN_SubscribeRx(STM32CAN_t* self, STM32CAN_RxCallback_t callback,
     if ((subscriber->callback_ == callback) &&
         (subscriber->context_ == context)) {
       self->last_error_ = OK;
+      LOG_DEBUG("CAN", "RX subscriber already registered (count=%u)",
+                (unsigned)self->subscriber_count_);
       return self->last_error_;
     }
   }
   if (self->started_) {
     self->last_error_ = STATE_ERR;
+    LOG_WARN("CAN", "Subscribe rejected after CAN start");
     return self->last_error_;
   }
   if (self->subscriber_count_ >= STM32CAN_RX_SUBSCRIBER_CAPACITY) {
     self->last_error_ = FULL;
+    LOG_ERROR("CAN", "Subscribe failed: subscriber table full");
     return self->last_error_;
   }
 
@@ -225,6 +237,8 @@ err_t STM32CAN_SubscribeRx(STM32CAN_t* self, STM32CAN_RxCallback_t callback,
   subscriber->callback_ = callback;
   subscriber->context_ = context;
   self->last_error_ = OK;
+  LOG_INFO("CAN", "RX subscriber added (count=%u)",
+           (unsigned)self->subscriber_count_);
   return self->last_error_;
 }
 
@@ -237,11 +251,16 @@ err_t STM32CAN_SubscribeRx(STM32CAN_t* self, STM32CAN_RxCallback_t callback,
  */
 err_t STM32CAN_Start(STM32CAN_t* self) {
   if (self == NULL) {
+    LOG_ERROR("CAN", "Start failed: self is NULL");
     return PTR_NULL;
   }
   self->last_error_ = BSP_CAN_start_handle(self->can_handle_);
   if (self->last_error_ == OK) {
     self->started_ = true;
+    LOG_INFO("CAN", "CAN%u started", (unsigned)self->id_);
+  } else {
+    LOG_ERROR("CAN", "CAN%u start failed: err=%d", (unsigned)self->id_,
+              (int)self->last_error_);
   }
   return self->last_error_;
 }
@@ -253,10 +272,12 @@ err_t STM32CAN_Start(STM32CAN_t* self) {
  */
 err_t STM32CAN_ConfigFilter(STM32CAN_t* self, const CAN_FilterTypeDef* filter) {
   if ((self == NULL) || (filter == NULL)) {
+    LOG_ERROR("CAN", "Filter configuration failed: invalid argument");
     return PTR_NULL;
   }
   if (self->can_handle_ == NULL) {
     self->last_error_ = PTR_NULL;
+    LOG_ERROR("CAN", "Filter configuration failed: handle is NULL");
     return self->last_error_;
   }
 
@@ -265,6 +286,11 @@ err_t STM32CAN_ConfigFilter(STM32CAN_t* self, const CAN_FilterTypeDef* filter) {
        HAL_OK)
           ? OK
           : FAILED;
+  if (self->last_error_ == OK) {
+    LOG_INFO("CAN", "CAN%u filter configured", (unsigned)self->id_);
+  } else {
+    LOG_ERROR("CAN", "CAN%u filter configuration failed", (unsigned)self->id_);
+  }
   return self->last_error_;
 }
 
@@ -276,10 +302,19 @@ err_t STM32CAN_ConfigFilter(STM32CAN_t* self, const CAN_FilterTypeDef* filter) {
 err_t STM32CAN_Send(STM32CAN_t* self, uint32_t std_id, const uint8_t* data,
                     size_t size) {
   if (self == NULL) {
+    LOG_ERROR("CAN", "Send failed: self is NULL");
     return PTR_NULL;
   }
   self->last_error_ =
       BSP_CAN_send_std_data(self->can_handle_, std_id, data, size);
+  if (self->last_error_ == OK) {
+    LOG_DEBUG("CAN", "CAN%u TX id=0x%03lX size=%u", (unsigned)self->id_,
+              (unsigned long)std_id, (unsigned)size);
+  } else {
+    LOG_WARN("CAN", "CAN%u TX failed id=0x%03lX size=%u err=%d",
+             (unsigned)self->id_, (unsigned long)std_id, (unsigned)size,
+             (int)self->last_error_);
+  }
   return self->last_error_;
 }
 
@@ -291,10 +326,15 @@ err_t STM32CAN_Send(STM32CAN_t* self, uint32_t std_id, const uint8_t* data,
 err_t STM32CAN_SendByHandle(CAN_HandleTypeDef* can_handle, uint32_t std_id,
                             const uint8_t* data, size_t size) {
   if (can_handle == NULL) {
+    LOG_ERROR("CAN", "SendByHandle failed: handle is NULL");
     return PTR_NULL;
   }
   STM32CAN_t* self = BSP_CAN_get_object(can_handle);
-  return (self != NULL) ? STM32CAN_Send(self, std_id, data, size) : NOT_FOUND;
+  if (self == NULL) {
+    LOG_ERROR("CAN", "SendByHandle failed: handle is not registered");
+    return NOT_FOUND;
+  }
+  return STM32CAN_Send(self, std_id, data, size);
 }
 
 // ==================== RX 广播与错误查询 ====================

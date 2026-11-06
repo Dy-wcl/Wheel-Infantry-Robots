@@ -258,6 +258,7 @@ err_t BSPLogClear(void);
 #define LOG_FATAL(tag, format, ...) \
   BSPLogWrite(BSP_LOG_LEVEL_FATAL, (tag), (format), ##__VA_ARGS__)
 #else
+#define LOG_TRACE(tag, format, ...) ((void)0)
 #define LOG_DEBUG(tag, format, ...) ((void)0)
 #define LOG_INFO(tag, format, ...) ((void)0)
 #define LOG_WARN(tag, format, ...) ((void)0)

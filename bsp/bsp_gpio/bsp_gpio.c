@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include "bsp_log.h"
 #include "comp_utils.h"
 
 enum {
@@ -58,6 +59,7 @@ GPIO GPIO_Init(GPIO* gpio, GPIO_TypeDef* port, uint16_t pin, IRQn_Type irq) {
       (gpio != NULL) ? GPIO_PinToLine(gpio->pin) : GPIO_INVALID_LINE;
 
   if (gpio == NULL) {
+    LOG_ERROR("GPIO", "Init failed: object is NULL");
     return empty;
   }
 
@@ -75,6 +77,8 @@ GPIO GPIO_Init(GPIO* gpio, GPIO_TypeDef* port, uint16_t pin, IRQn_Type irq) {
 
   if ((port == NULL) || (line == GPIO_INVALID_LINE)) {
     gpio->last_error = ARG_ERR;
+    LOG_ERROR("GPIO", "Init failed: port or pin is invalid (pin=0x%04X)",
+              (unsigned)pin);
     return *gpio;
   }
 
@@ -83,6 +87,8 @@ GPIO GPIO_Init(GPIO* gpio, GPIO_TypeDef* port, uint16_t pin, IRQn_Type irq) {
     gpio_map[line] = gpio;
   }
 
+  LOG_INFO("GPIO", "Initialized pin=0x%04X line=%u irq=%d", (unsigned)pin,
+           (unsigned)line, (int)irq);
   return *gpio;
 }
 
@@ -94,7 +100,10 @@ GPIO GPIO_Init(GPIO* gpio, GPIO_TypeDef* port, uint16_t pin, IRQn_Type irq) {
 bool GPIO_Read(const GPIO* gpio) {
   ASSERT(gpio != NULL);
   ASSERT(gpio->port != NULL);
-  return (gpio->port->IDR & gpio->pin) != 0U;
+  const bool value = (gpio->port->IDR & gpio->pin) != 0U;
+  LOG_TRACE("GPIO", "Read pin=0x%04X value=%u", (unsigned)gpio->pin,
+            value ? 1U : 0U);
+  return value;
 }
 
 /**
@@ -111,6 +120,8 @@ void GPIO_Write(GPIO* gpio, bool value) {
   } else {
     gpio->port->BSRR = (uint32_t)gpio->pin << 16U;
   }
+  LOG_TRACE("GPIO", "Write pin=0x%04X value=%u", (unsigned)gpio->pin,
+            value ? 1U : 0U);
 }
 
 /**
@@ -120,15 +131,18 @@ void GPIO_Write(GPIO* gpio, bool value) {
  */
 err_t GPIO_EnableInterrupt(GPIO* gpio) {
   if (gpio == NULL) {
+    LOG_ERROR("GPIO", "Enable interrupt failed: object is NULL");
     return PTR_NULL;
   }
   if (gpio->irq == NonMaskableInt_IRQn) {
     GPIO_SetError(gpio, STATE_ERR);
+    LOG_WARN("GPIO", "Enable interrupt rejected: no IRQ configured");
     return gpio->last_error;
   }
 
   HAL_NVIC_EnableIRQ(gpio->irq);
   GPIO_SetError(gpio, OK);
+  LOG_INFO("GPIO", "Interrupt enabled for pin=0x%04X", (unsigned)gpio->pin);
   return gpio->last_error;
 }
 
@@ -139,15 +153,18 @@ err_t GPIO_EnableInterrupt(GPIO* gpio) {
  */
 err_t GPIO_DisableInterrupt(GPIO* gpio) {
   if (gpio == NULL) {
+    LOG_ERROR("GPIO", "Disable interrupt failed: object is NULL");
     return PTR_NULL;
   }
   if (gpio->irq == NonMaskableInt_IRQn) {
     GPIO_SetError(gpio, STATE_ERR);
+    LOG_WARN("GPIO", "Disable interrupt rejected: no IRQ configured");
     return gpio->last_error;
   }
 
   HAL_NVIC_DisableIRQ(gpio->irq);
   GPIO_SetError(gpio, OK);
+  LOG_INFO("GPIO", "Interrupt disabled for pin=0x%04X", (unsigned)gpio->pin);
   return gpio->last_error;
 }
 
@@ -163,6 +180,7 @@ err_t GPIO_SetConfig(GPIO* gpio, GPIO_Configuration config) {
   if ((gpio == NULL) || (gpio->port == NULL) ||
       (GPIO_PinToLine(gpio->pin) == GPIO_INVALID_LINE)) {
     GPIO_SetError(gpio, (gpio == NULL) ? PTR_NULL : ARG_ERR);
+    LOG_ERROR("GPIO", "SetConfig failed: invalid object or pin");
     return (gpio == NULL) ? PTR_NULL : gpio->last_error;
   }
 
@@ -189,6 +207,8 @@ err_t GPIO_SetConfig(GPIO* gpio, GPIO_Configuration config) {
       break;
     default:
       GPIO_SetError(gpio, ARG_ERR);
+      LOG_ERROR("GPIO", "SetConfig failed: invalid direction=%d",
+                (int)config.direction);
       return gpio->last_error;
   }
 
@@ -205,12 +225,15 @@ err_t GPIO_SetConfig(GPIO* gpio, GPIO_Configuration config) {
       break;
     default:
       GPIO_SetError(gpio, ARG_ERR);
+      LOG_ERROR("GPIO", "SetConfig failed: invalid pull=%d", (int)config.pull);
       return gpio->last_error;
   }
 
   init.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(gpio->port, &init);
   GPIO_SetError(gpio, OK);
+  LOG_INFO("GPIO", "Configured pin=0x%04X direction=%d pull=%d",
+           (unsigned)gpio->pin, (int)config.direction, (int)config.pull);
   return gpio->last_error;
 }
 
@@ -223,12 +246,15 @@ err_t GPIO_SetConfig(GPIO* gpio, GPIO_Configuration config) {
  */
 err_t GPIO_RegisterCallback(GPIO* gpio, GPIO_Callback callback, void* context) {
   if (gpio == NULL) {
+    LOG_ERROR("GPIO", "Register callback failed: object is NULL");
     return PTR_NULL;
   }
 
   gpio->callback = callback;
   gpio->callback_context = context;
   GPIO_SetError(gpio, OK);
+  LOG_DEBUG("GPIO", "Callback %s for pin=0x%04X",
+            callback == NULL ? "cleared" : "registered", (unsigned)gpio->pin);
   return gpio->last_error;
 }
 
