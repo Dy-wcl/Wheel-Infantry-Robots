@@ -124,6 +124,10 @@ typedef struct {
   float position_rad;          /**< 逻辑方向位置角，单位 rad，约 [0, 2π) 或取反 */
   float position_deg;          /**< 逻辑方向转子单圈角度，单位 °，范围 [0, 360) */
   float speed_rad_s;           /**< 输出轴角速度，单位 rad/s（已除减速比） */
+  int32_t round_count;         /**< 逻辑方向下的转子累计整圈数 */
+  int64_t total_encoder;       /**< 逻辑方向下的转子累计编码器总刻度 */
+  float total_deg;             /**< 逻辑方向下的转子多圈累计角度，单位 ° */
+  float output_total_deg;      /**< 逻辑方向下的输出轴多圈累计角度，单位 ° */
   uint32_t last_feedback_tick; /**< 最近一次合法反馈的 HAL_GetTick */
   bool valid;                  /**< true 表示至少成功解析过一帧反馈 */
 } dj_motor_feedback_t;
@@ -179,6 +183,8 @@ struct dj_motor {
   dj_motor_route_t route;               /**< 自动推导的反馈/控制路由 */
   int16_t command;                      /**< 逻辑方向最新命令（限幅后） */
   dj_motor_raw_feedback_t raw_feedback; /**< ISR 写入的最近原始反馈 */
+  uint16_t last_raw_encoder;            /**< ISR 维护的上一帧硬件编码器值 0..8191 */
+  int32_t round_count;                  /**< ISR 维护的硬件编码器跨零累计整圈数 */
   uint32_t last_feedback_tick;          /**< 最近反馈时间戳 */
   bool feedback_valid;                  /**< 是否至少收过一帧合法反馈 */
 };

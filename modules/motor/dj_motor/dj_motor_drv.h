@@ -83,6 +83,13 @@ float dj_motor_drv_encoder_to_rad(uint16_t encoder);
 float dj_motor_drv_encoder_to_deg(uint16_t encoder);
 
 /**
+ * @brief 按型号返回转子到输出轴的减速比。
+ * @param type 电机型号。
+ * @return 减速比；未知型号回退为 1.0f。
+ */
+float dj_motor_drv_reduction_ratio(dj_motor_type_e type);
+
+/**
  * @brief 将转子 RPM 换算为输出轴角速度。
  * @param type 用于选择减速比的电机型号。
  * @param rpm 转子侧转速（逻辑方向下可已取反）。

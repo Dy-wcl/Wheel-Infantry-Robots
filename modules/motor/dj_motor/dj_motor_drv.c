@@ -31,7 +31,7 @@ static uint16_t dj_motor_drv_read_u16_be(const uint8_t data[2]) {
  * @param type 电机型号。
  * @return 减速比；未知型号回退为 1.0f。
  */
-static float dj_motor_drv_reduction_ratio(dj_motor_type_e type) {
+float dj_motor_drv_reduction_ratio(dj_motor_type_e type) {
   switch (type) {
   case DJ_MOTOR_M3508:
     return DJ_MOTOR_M3508_REDUCTION_RATIO;

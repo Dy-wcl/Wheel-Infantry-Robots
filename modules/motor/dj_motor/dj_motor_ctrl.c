@@ -90,6 +90,18 @@ static void dj_motor_rx_callback(STM32CAN_t *can, const BSP_CAN_Frame_t *frame,
       return;
     }
 
+    if (!motor->feedback_valid) {
+      motor->round_count = 0;
+    } else {
+      const int32_t delta =
+          (int32_t)raw.encoder - (int32_t)motor->last_raw_encoder;
+      if (delta > (int32_t)(DJ_MOTOR_ENCODER_RESOLUTION / 2U)) {
+        --motor->round_count;
+      } else if (delta < -(int32_t)(DJ_MOTOR_ENCODER_RESOLUTION / 2U)) {
+        ++motor->round_count;
+      }
+    }
+    motor->last_raw_encoder = raw.encoder;
     motor->raw_feedback = raw;
     motor->last_feedback_tick = HAL_GetTick();
     motor->feedback_valid = true;
@@ -331,11 +343,13 @@ err_t dj_motor_get_feedback(const dj_motor_t *motor,
   }
 
   dj_motor_raw_feedback_t raw;
+  int32_t raw_round;
   uint32_t tick;
   bool valid;
 
   taskENTER_CRITICAL();
   raw = motor->raw_feedback;
+  raw_round = motor->round_count;
   tick = motor->last_feedback_tick;
   valid = motor->feedback_valid;
   taskEXIT_CRITICAL();
@@ -344,6 +358,9 @@ err_t dj_motor_get_feedback(const dj_motor_t *motor,
   int16_t current = raw.current;
   float position = dj_motor_drv_encoder_to_rad(raw.encoder);
   float position_deg = dj_motor_drv_encoder_to_deg(raw.encoder);
+  int64_t total_encoder =
+      (int64_t)raw_round * (int64_t)DJ_MOTOR_ENCODER_RESOLUTION +
+      (int64_t)raw.encoder;
   if (motor->reversed) {
     speed = (int16_t)(-speed);
     current = (int16_t)(-current);
@@ -351,7 +368,20 @@ err_t dj_motor_get_feedback(const dj_motor_t *motor,
     if (position_deg > 0.0f) {
       position_deg = 360.0f - position_deg;
     }
+    total_encoder = -total_encoder;
   }
+
+  const int32_t logical_round =
+      (total_encoder >= 0)
+          ? (int32_t)(total_encoder / (int64_t)DJ_MOTOR_ENCODER_RESOLUTION)
+          : -(int32_t)((-total_encoder +
+                        (int64_t)DJ_MOTOR_ENCODER_RESOLUTION - 1) /
+                       (int64_t)DJ_MOTOR_ENCODER_RESOLUTION);
+  const float total_deg =
+      (float)total_encoder * (360.0f / (float)DJ_MOTOR_ENCODER_RESOLUTION);
+  const float reduction = dj_motor_drv_reduction_ratio(motor->type);
+  const float output_total_deg =
+      (reduction > 0.0f) ? (total_deg / reduction) : total_deg;
 
   feedback->encoder_raw = raw.encoder;
   feedback->speed_rpm = speed;
@@ -360,6 +390,10 @@ err_t dj_motor_get_feedback(const dj_motor_t *motor,
   feedback->position_rad = position;
   feedback->position_deg = position_deg;
   feedback->speed_rad_s = dj_motor_drv_rpm_to_rad_s(motor->type, speed);
+  feedback->round_count = logical_round;
+  feedback->total_encoder = total_encoder;
+  feedback->total_deg = total_deg;
+  feedback->output_total_deg = output_total_deg;
   feedback->last_feedback_tick = tick;
   feedback->valid = valid;
   return OK;
