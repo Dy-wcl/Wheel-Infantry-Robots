@@ -6,25 +6,25 @@
 
 | 机构 | 电机 | 设备 ID | CAN 总线 | 控制组 | 控制方式 |
 | --- | --- | --- | --- | --- | --- |
-| 左摩擦轮 | M3508 | 1 | CAN1 | 0x200 | 单速度环 |
-| 右摩擦轮 | M3508 | 2 | CAN1 | 0x200 | 单速度环 |
+| 左摩擦轮 | M3508 | 7 | CAN1 | 0x1FF | 单速度环 |
+| 右摩擦轮 | M3508 | 8 | CAN1 | 0x1FF | 单速度环 |
 | 拨弹 | M2006 | 3 | CAN1 | 0x200 | 速度位置双环 |
 
 ## API
 
 | 函数 | 说明 |
 | --- | --- |
-| `err_t shoot_control_init(void)` | 初始化 CAN1 总线对象并注册 3 台电机(须在 `CAN_StartAll()` 之前;当前尚无调用方) |
+| `err_t shoot_control_init(void)` | 初始化 CAN1 总线对象并注册 3 台电机(须在 `CAN_StartAll()` 之前) |
 | `void shoot_speed_pid_init(void)` | 初始化摩擦轮速度环与拨弹双环 PID |
-| `pid_device_t* shoot_get_pid_device(index)` | 获取公共 PID 设备：0=左摩擦轮、1=右摩擦轮、2=拨弹，越界返回 NULL |
-| `void dj_motor_pid_control_location(motor_id, target_angle)` | 兼容入口，仅索引 2 的拨弹电机支持位置控制，单位为转子角度（度） |
 | `void Shoot_Mode(void)` | 模式控制主函数,控制任务 2ms 周期调用 |
 
 ## 拨弹角度闭环
 
-`dj_motor_pid_control_location()` 以 `is_optimize=true` 转调公共 `pid_device_control_location()`：读取有效的 `position_deg` 反馈 → 计算单圈最短路径误差 → 位置环输出目标转子 RPM → 速度环输出电流指令 → 按电机型号限幅后写入组缓存。不累计减速器输出轴圈数，不在首次调用时重设目标或复位 PID。
+单发模式使用 `dj_motor` 中断维护的跨零整圈计数（`total_encoder`）与公共层多圈位置接口实现连续多圈闭环：
 
-新调用方可直接使用 `pid_device_control_speed(shoot_get_pid_device(0), rpm, ff)` 或 `pid_device_control_location(shoot_get_pid_device(2), angle_deg, ff, true)`；末参为 `false` 时直接使用目标和反馈角度，不取最短路径。初始化前提与统一接口说明见 [pid_device](../../../app/pid_device/pid_device.md)。
+- 触发单发时调用 `pid_device_reset_multi_turn(&shoot_pid_devices[2])` 将当前位置设为相对零点；
+- 闭环期间调用 `pid_device_control_multi_location(&shoot_pid_devices[2], 45.0f, 0.0f, true)`，公共层按 M2006 减速比（`36.0f`）将输出轴目标 `45°` 换算为转子 `1620°` 传入外环 `pid_location`，再由速度内环输出电流指令写入 `0x200` 组缓存；
+- 通过 `pid_device_get_multi_turn_deg(&shoot_pid_devices[2], &current_output_deg, true)` 获取当前输出轴相对角度进行到位判稳（误差 `<= 0.5°` 且转速 `<= 150 RPM` 持续 10 ms）。
 
 ## PID 参数
 
@@ -34,19 +34,20 @@
 
 | 电机 | 环 | Kp | MaxOut |
 | --- | --- | --- | --- |
-| 摩擦轮(1/2 号) | 速度环 | 10.0 | 12000 |
+| 摩擦轮(7/8 号) | 速度环 | 10.0 | 12000 |
 | 拨弹(3 号) | 速度环(双环内环) | 8.0 | 10000(M2006 电流上限) |
 | 拨弹(3 号) | 位置环(双环外环) | 8.0 | 3000(输出为目标速度) |
 
 ## DR16 发射模式
 
-仅当左右拨杆都处于中位时，`dr16->dr16_cmd.ch_res` 才参与发射控制：
+当 `dr16->dr16_cmd.sw_r == CMD_SW_MID`（右拨杆在中位，不受左拨杆小陀螺等模式限制）时，发射机构首先启动双摩擦轮以 `2000 RPM` 旋转，并在双摩擦轮转速稳定达到就绪阈值（`>= 1600 RPM` 持续 20 ms）后允许供弹：
 
-- `ch_res > 0.5` 持续约 10 ms：锁存当前角度加 30°，完成一次拨弹后拨弹电机停止，摩擦轮继续运行；保持该输入不会重复发射。
-- `ch_res < -0.5`：摩擦轮低速运行，拨弹电机连续运行。
-- `-0.5 <= ch_res <= 0.5`，或任一拨杆离开中位：清除单发状态并发送全零安全帧。
+- `-0.5 <= ch_res <= 0.5`（死区）：摩擦轮保持旋转待命，拨弹电机速度清零停止，并复位单发锁存状态以允许下一次单发；
+- `ch_res > 0.5` 持续 10 ms（摩擦轮已就绪）：锁存本次拨弹零点并向前运动 `1620°` 转子角（输出轴 `45°`），在误差 `<= 18°` 且转速 `<= 150 RPM` 持续 10 ms 后停稳（含 1000 ms 超时堵转保护）；保持该输入不会重复发射；
+- `ch_res < -0.5`（摩擦轮已就绪）：拨弹电机以 `3000 RPM` 连续拨弹；
+- 右拨杆离开中位或遥控器离线：清除状态并同时向 `0x1FF`（摩擦轮）与 `0x200`（拨弹）发送全零安全帧。
 
-再次单发需要先回到死区或离开拨杆中位，再重新进入 `ch_res > 0.5`。
+再次单发需要先回到死区，再重新进入 `ch_res > 0.5`。
 
 ## 注意事项
 
