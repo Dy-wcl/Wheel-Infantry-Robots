@@ -10,21 +10,89 @@
 
 #include "crc_ref.h"
 
-static uint8_t dma_buffer_[sizeof(vt13_data_t) * 2u];
-static uint8_t vt13_rx_buffer_[sizeof(vt13_data_t)];
+#define VT13_FRAME_SIZE (sizeof(vt13_data_t))
+#define VT13_SOF_1 (0xA9u)
+#define VT13_SOF_2 (0x53u)
+
+static uint8_t dma_buffer_[VT13_FRAME_SIZE * 2u];
+static uint8_t vt13_rx_buffer_[VT13_FRAME_SIZE];
+static uint8_t vt13_frame_accumulator_[VT13_FRAME_SIZE];
+static size_t vt13_frame_accumulator_size_ = 0U;
+static uint32_t vt13_last_rx_error_count_ = 0U;
 static volatile bool frame_ready_ = false;
 static vt13_t *instance_ = NULL;
 
-static void VT13_RxCallback(uint8_t *data, size_t size) {
-  if ((size != sizeof(vt13_data_t)) || (instance_ == NULL))
+//! 在 CRC 校验失败后于当前缓存内检索下一个潜在帧头，实现任意偏移重同步。
+static void VT13_ResyncAccumulator(void) {
+  for (size_t offset = 1U; offset < vt13_frame_accumulator_size_; ++offset) {
+    if (vt13_frame_accumulator_[offset] != VT13_SOF_1) {
+      continue;
+    }
+    const size_t remaining = vt13_frame_accumulator_size_ - offset;
+    if ((remaining >= 2U) &&
+        (vt13_frame_accumulator_[offset + 1U] != VT13_SOF_2)) {
+      continue;
+    }
+    memmove(vt13_frame_accumulator_, vt13_frame_accumulator_ + offset,
+            remaining);
+    vt13_frame_accumulator_size_ = remaining;
     return;
-  memcpy(vt13_rx_buffer_, data, sizeof(vt13_data_t));
-  frame_ready_ = true;
-  if (instance_->thread_alert != NULL) {
-    BaseType_t woken = pdFALSE;
-    xTaskNotifyFromISR(instance_->thread_alert, SIGNAL_VT13_RAW_REDY, eSetBits,
-                       &woken);
-    portYIELD_FROM_ISR(woken);
+  }
+  vt13_frame_accumulator_size_ = 0U;
+}
+
+//! RX DMA 接收回调（中断上下文）：接收任意分片字节流并基于帧头+CRC16 重同步完整帧。
+static void VT13_RxCallback(uint8_t *data, size_t size) {
+  if ((data == NULL) || (size == 0U) || (instance_ == NULL)) {
+    return;
+  }
+
+  const uint32_t rx_err_count = STM32UART_GetRxErrorCount(&instance_->uart_);
+  if (rx_err_count != vt13_last_rx_error_count_) {
+    vt13_last_rx_error_count_ = rx_err_count;
+    vt13_frame_accumulator_size_ = 0U;
+  }
+
+  for (size_t i = 0U; i < size; ++i) {
+    const uint8_t byte = data[i];
+
+    if (vt13_frame_accumulator_size_ == 0U) {
+      if (byte == VT13_SOF_1) {
+        vt13_frame_accumulator_[0] = byte;
+        vt13_frame_accumulator_size_ = 1U;
+      }
+      continue;
+    }
+
+    if (vt13_frame_accumulator_size_ == 1U) {
+      if (byte == VT13_SOF_2) {
+        vt13_frame_accumulator_[1] = byte;
+        vt13_frame_accumulator_size_ = 2U;
+      } else if (byte != VT13_SOF_1) {
+        vt13_frame_accumulator_size_ = 0U;
+      }
+      continue;
+    }
+
+    vt13_frame_accumulator_[vt13_frame_accumulator_size_++] = byte;
+    if (vt13_frame_accumulator_size_ < VT13_FRAME_SIZE) {
+      continue;
+    }
+
+    if (Verify_CRC16_Check_Sum(vt13_frame_accumulator_,
+                               (uint32_t)VT13_FRAME_SIZE) == TRUE) {
+      memcpy(vt13_rx_buffer_, vt13_frame_accumulator_, VT13_FRAME_SIZE);
+      frame_ready_ = true;
+      vt13_frame_accumulator_size_ = 0U;
+      if (instance_->thread_alert != NULL) {
+        BaseType_t woken = pdFALSE;
+        xTaskNotifyFromISR(instance_->thread_alert, SIGNAL_VT13_RAW_REDY,
+                           eSetBits, &woken);
+        portYIELD_FROM_ISR(woken);
+      }
+    } else {
+      VT13_ResyncAccumulator();
+    }
   }
 }
 
@@ -109,6 +177,9 @@ err_t vt13_init(vt13_t *vt13, UART_HandleTypeDef *uart_handle) {
   if (vt13 == NULL)
     return PTR_NULL;
   memset(vt13, 0, sizeof(*vt13));
+  vt13_frame_accumulator_size_ = 0U;
+  vt13_last_rx_error_count_ = 0U;
+  frame_ready_ = false;
   vt13->thread_alert = xTaskGetCurrentTaskHandle();
   vt13->init_error_ = STM32UART_Init(
       &vt13->uart_, uart_handle,
@@ -129,11 +200,18 @@ void vt13_update(vt13_t *vt13, uint32_t timeout_ms) {
   if (vt13 == NULL)
     return;
   uint32_t notify = 0;
-  BaseType_t result = xTaskNotifyWait(SIGNAL_VT13_RAW_REDY, UINT32_MAX, &notify,
-                                      pdMS_TO_TICKS(timeout_ms));
-  if ((result == pdTRUE) && frame_ready_) {
-    frame_ready_ = false;
+  (void)xTaskNotifyWait(0U, SIGNAL_VT13_RAW_REDY, &notify,
+                        pdMS_TO_TICKS(timeout_ms));
+
+  taskENTER_CRITICAL();
+  const bool ready = frame_ready_;
+  if (ready) {
     memcpy(&vt13->data, vt13_rx_buffer_, sizeof(vt13->data));
+    frame_ready_ = false;
+  }
+  taskEXIT_CRITICAL();
+
+  if (ready) {
     if (vt13_parse_rc(vt13, &vt13->cmd) == OK)
       vt13->online_ = true;
     else {
@@ -144,14 +222,25 @@ void vt13_update(vt13_t *vt13, uint32_t timeout_ms) {
     vt13->online_ = false;
     memset(&vt13->cmd, 0, sizeof(vt13->cmd));
   }
+
+  if (STM32UART_GetLastError(&vt13->uart_) != OK) {
+    taskENTER_CRITICAL();
+    vt13_frame_accumulator_size_ = 0U;
+    vt13_last_rx_error_count_ = STM32UART_GetRxErrorCount(&vt13->uart_);
+    taskEXIT_CRITICAL();
+    (void)STM32UART_RestartRxDMA(&vt13->uart_);
+  }
 }
 
 err_t vt13_restart(vt13_t *vt13) {
   if ((vt13 == NULL) || (vt13->uart_.uart_handle_ == NULL))
     return PTR_NULL;
-  __HAL_UART_DISABLE(vt13->uart_.uart_handle_);
-  __HAL_UART_ENABLE(vt13->uart_.uart_handle_);
-  return OK;
+  taskENTER_CRITICAL();
+  frame_ready_ = false;
+  vt13_frame_accumulator_size_ = 0U;
+  vt13_last_rx_error_count_ = STM32UART_GetRxErrorCount(&vt13->uart_);
+  taskEXIT_CRITICAL();
+  return STM32UART_RestartRxDMA(&vt13->uart_);
 }
 
 err_t vt13_start_dma_recv(vt13_t *vt13) { return vt13_start(vt13); }

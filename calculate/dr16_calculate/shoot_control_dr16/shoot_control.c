@@ -30,6 +30,12 @@ static err_t pid_init_result[3];
 static PIDInstance pid_location;
 static pid_device_t shoot_pid_devices[3];
 
+/* 单发目标只在进入 ch_res 正向模式时锁存一次。 */
+static float shoot_single_target_deg;      /* 本次单发的目标角度，单位：度。 */
+static bool shoot_single_target_valid;     /* 目标角度是否已经成功锁存。 */
+static bool shoot_single_done;             /* 本次单发是否已经到位并停止。 */
+static uint8_t shoot_single_confirm_count; /* 正向 ch_res 连续确认的周期数。 */
+
 /**
  * @brief 初始化发射 CAN 总线与三台发射电机
  * @return OK 或错误码
@@ -151,12 +157,6 @@ static void shoot_stop(void) {
   VERIFY(dj_motor_zero_and_flush(&shoot_bus, DJ_MOTOR_GROUP_200) == OK);
 }
 
-/* 单发目标只在进入 ch_res 正向模式时锁存一次。 */
-static float shoot_single_target_deg;      /* 本次单发的目标角度，单位：度。 */
-static bool shoot_single_target_valid;     /* 目标角度是否已经成功锁存。 */
-static bool shoot_single_done;             /* 本次单发是否已经到位并停止。 */
-static uint8_t shoot_single_confirm_count; /* 正向 ch_res 连续确认的周期数。 */
-
 static void shoot_single_reset(void) {
   shoot_single_target_valid = false;
   shoot_single_done = false;
@@ -202,8 +202,10 @@ static void shoot_single_mode(void) {
     char target_text[32];
 #endif
     LOG_DEBUG("发射计算", "单发目标角度已锁存：%s 度",
-              Float2StrN(target_text, sizeof(target_text), shoot_single_target_deg) >= 0
-                  ? target_text : "<invalid>");
+              Float2StrN(target_text, sizeof(target_text),
+                         shoot_single_target_deg) >= 0
+                  ? target_text
+                  : "<invalid>");
   }
 
   /* 摩擦轮已经持续运行，拨弹电机执行一次固定角度动作。 */
@@ -234,7 +236,8 @@ static void shoot_single_mode(void) {
 #endif
     LOG_DEBUG("发射计算", "单发拨弹完成，角度误差=%s 度",
               Float2StrN(error_text, sizeof(error_text), angle_error) >= 0
-                  ? error_text : "<invalid>");
+                  ? error_text
+                  : "<invalid>");
   }
 }
 

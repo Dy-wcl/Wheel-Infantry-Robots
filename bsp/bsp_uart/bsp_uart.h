@@ -58,12 +58,18 @@ typedef struct {
 //! RX 使用硬件循环 DMA + last_rx_pos_ 软件读指针，HAL
 //! 空闲线事件到来时切分新数据。
 typedef struct {
-  BSP_UART_t id_;                    //! BSP 逻辑串口编号
-  size_t last_rx_pos_;               //! 软件读指针，上次处理到的 DMA 写入位置
-  BSP_UART_RawData_t dma_buff_rx_;   //! RX 循环 DMA 原始缓冲
-  UART_HandleTypeDef* uart_handle_;  //! CubeMX 生成的 HAL UART 句柄
+  BSP_UART_t id_;                       //! BSP 逻辑串口编号
+  volatile size_t last_rx_pos_;         //! 软件读指针，上次处理到的 DMA 写入位置
+  BSP_UART_RawData_t dma_buff_rx_;      //! RX 循环 DMA 原始缓冲
+  UART_HandleTypeDef* uart_handle_;     //! CubeMX 生成的 HAL UART 句柄
   STM32UART_RxCallback_t rx_callback_;  //! 新数据片段回调
-  err_t last_error_;                    //! 最近一次 BSP 操作结果
+  volatile err_t last_error_;           //! 最近一次 BSP 操作结果
+  volatile uint32_t rx_error_count_;    //! RX 错误累计次数（可用于上层丢弃半包）
+  uint32_t rx_err_window_tick_;         //! 错误突发计数窗口起始时间戳
+  uint8_t rx_err_burst_count_;          //! 当前时间窗口内的连续错误次数
+  volatile bool rx_enabled_;            //! SetRxDMA 是否已启用接收
+  volatile bool rx_restart_pending_;    //! 是否待通过定时器/任务重启 RX DMA
+  volatile bool rx_restarting_;         //! 任务上下文正在执行 RestartRxDMA
 } STM32UART_t;
 
 //! 变长帧 DMA TX 控制块。
@@ -121,6 +127,10 @@ err_t STM32UART_Init(STM32UART_t* self, UART_HandleTypeDef* uart_handle,
 //! 开始接收。
 err_t STM32UART_SetRxDMA(STM32UART_t* self);
 
+//! 在 UART 错误后停止并重新启动单缓冲 RX DMA。
+//! 仅在任务上下文调用；用于恢复 HAL 因帧错/溢出而停止的接收状态。
+err_t STM32UART_RestartRxDMA(STM32UART_t* self);
+
 //! 更新单缓冲 RX 用户回调。
 //! 可在初始化后替换回调，不会重启 DMA。
 void STM32UART_SetRxCallback(STM32UART_t* self,
@@ -128,6 +138,9 @@ void STM32UART_SetRxCallback(STM32UART_t* self,
 
 //! 读取单缓冲 RX 最近一次错误码。
 err_t STM32UART_GetLastError(const STM32UART_t* self);
+
+//! 读取单缓冲 RX 累计错误次数（可用于上层在错误后丢弃不完整半包）。
+uint32_t STM32UART_GetRxErrorCount(const STM32UART_t* self);
 
 //! 处理一段已经切分好的 RX 数据。
 //! 内部会做空指针和长度保护，然后调用用户回调。

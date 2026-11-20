@@ -11,6 +11,7 @@ static uint8_t i6x_rx_buffer_[I6X_FRAME_SIZE];
 static volatile bool frame_ready_ = false;
 static I6X_t *instance_ = NULL;
 static i6x_frame_sync_t frame_sync_;
+static uint32_t i6x_last_rx_error_count_ = 0U;
 
 // ==================== 原始帧校验与解析 ====================
 
@@ -159,6 +160,14 @@ static void I6X_RxCallback(uint8_t *data, size_t size)
     return;
   }
 
+  if (instance_ != NULL) {
+    const uint32_t rx_err_count = STM32UART_GetRxErrorCount(&instance_->uart_);
+    if (rx_err_count != i6x_last_rx_error_count_) {
+      i6x_last_rx_error_count_ = rx_err_count;
+      I6X_FrameSyncReset(&frame_sync_);
+    }
+  }
+
   for (size_t i = 0; i < size; i++) {
     if (I6X_FrameSyncPush(&frame_sync_, data[i], i6x_rx_buffer_)) {
       frame_ready_ = true;
@@ -185,6 +194,8 @@ err_t I6X_Init(I6X_t *self, UART_HandleTypeDef *uart_handle)
   self->switch_required = pdFALSE;
   self->online_ = false;
   I6X_FrameSyncReset(&frame_sync_);
+  i6x_last_rx_error_count_ = 0U;
+  frame_ready_ = false;
   self->init_error_ = STM32UART_Init(
       &self->uart_, uart_handle,
       (BSP_UART_RawData_t){dma_buffer_, sizeof(dma_buffer_)}, I6X_RxCallback);
@@ -210,19 +221,35 @@ void I6X_Update(I6X_t *self, uint32_t timeout_ms)
   }
 
   uint32_t notify_value = 0;
-  BaseType_t result = xTaskNotifyWait(SIGNAL_I6X_RAW_READY, UINT32_MAX,
-                                      &notify_value, pdMS_TO_TICKS(timeout_ms));
+  (void)xTaskNotifyWait(0U, SIGNAL_I6X_RAW_READY, &notify_value,
+                        pdMS_TO_TICKS(timeout_ms));
 
-  if ((result == pdTRUE) && frame_ready_) {
-    frame_ready_ = false;
+  taskENTER_CRITICAL();
+  const bool ready = frame_ready_;
+  if (ready) {
     memcpy(self->raw_frame, i6x_rx_buffer_, I6X_FRAME_SIZE);
+    frame_ready_ = false;
+  }
+  taskEXIT_CRITICAL();
 
+  if (ready) {
     if (I6X_DecodeFrame(self->raw_frame, &self->cmd) == OK) {
       self->online_ = true;
+    } else {
+      self->online_ = false;
+      memset(&self->cmd, 0, sizeof(self->cmd));
     }
   } else {
     self->online_ = false;
     memset(&self->cmd, 0, sizeof(self->cmd));
+  }
+
+  if (STM32UART_GetLastError(&self->uart_) != OK) {
+    taskENTER_CRITICAL();
+    I6X_FrameSyncReset(&frame_sync_);
+    i6x_last_rx_error_count_ = STM32UART_GetRxErrorCount(&self->uart_);
+    taskEXIT_CRITICAL();
+    (void)STM32UART_RestartRxDMA(&self->uart_);
   }
 }
 

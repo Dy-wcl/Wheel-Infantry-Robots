@@ -10,6 +10,7 @@ static uint8_t dma_buffer_[DR16_FRAME_SIZE * 2];
 static uint8_t dr16_rx_buffer_[DR16_FRAME_SIZE];
 static uint8_t dr16_frame_accumulator_[DR16_FRAME_SIZE];
 static size_t dr16_frame_accumulator_size_ = 0U;
+static uint32_t dr16_last_rx_error_count_ = 0U;
 static volatile bool frame_ready_ = false;
 static DR16_t *instance_ = NULL;
 
@@ -99,6 +100,14 @@ static void DR16_RxCallback(uint8_t *data, size_t size) {
     return;
   }
 
+  if (instance_ != NULL) {
+    const uint32_t rx_err_count = STM32UART_GetRxErrorCount(&instance_->uart_);
+    if (rx_err_count != dr16_last_rx_error_count_) {
+      dr16_last_rx_error_count_ = rx_err_count;
+      dr16_frame_accumulator_size_ = 0U;
+    }
+  }
+
   for (size_t index = 0U; index < size; ++index) {
     dr16_frame_accumulator_[dr16_frame_accumulator_size_++] = data[index];
 
@@ -136,6 +145,7 @@ err_t DR16_Init(DR16_t *self, UART_HandleTypeDef *uart_handle) {
 
   memset(self, 0, sizeof(*self));
   dr16_frame_accumulator_size_ = 0U;
+  dr16_last_rx_error_count_ = 0U;
   frame_ready_ = false;
   self->switch_required = pdFALSE;
   self->online_ = false;
@@ -164,7 +174,7 @@ void DR16_Update(DR16_t *self, uint32_t timeout_ms) {
   }
 
   uint32_t notify_value = 0;
-  (void)xTaskNotifyWait(SIGNAL_DR16_RAW_REDY, UINT32_MAX,
+  (void)xTaskNotifyWait(0U, SIGNAL_DR16_RAW_REDY,
                        &notify_value, pdMS_TO_TICKS(timeout_ms));
 
   /* 标志检查、快照复制和标志清除必须一起完成，防止接收 ISR
@@ -189,5 +199,14 @@ void DR16_Update(DR16_t *self, uint32_t timeout_ms) {
   } else {
     self->online_ = false;
     memset(&self->dr16_cmd, 0, sizeof(self->dr16_cmd));
+  }
+
+  /* 若 ISR 恢复因突发限流延后，则在任务上下文兜底重启接收。 */
+  if (STM32UART_GetLastError(&self->uart_) != OK) {
+    taskENTER_CRITICAL();
+    dr16_frame_accumulator_size_ = 0U;
+    dr16_last_rx_error_count_ = STM32UART_GetRxErrorCount(&self->uart_);
+    taskEXIT_CRITICAL();
+    (void)STM32UART_RestartRxDMA(&self->uart_);
   }
 }
