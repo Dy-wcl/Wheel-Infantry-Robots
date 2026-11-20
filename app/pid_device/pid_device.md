@@ -10,7 +10,10 @@
 | --- | --- |
 | `pid_device_init(device, motor, algorithm, speed_pid, location_pid)` | 绑定电机和已初始化的 PID 状态；单速度环的 `location_pid` 为 `NULL` |
 | `pid_device_control_speed(device, target_rpm, feedforward)` | 速度环控制 |
-| `pid_device_control_location(device, target_deg, feedforward, is_optimize)` | 位置环输出目标 RPM，再运行速度环；`is_optimize` 选择最短路径或直接角度控制 |
+| `pid_device_control_location(device, target_deg, feedforward, is_optimize)` | 单圈位置环输出目标 RPM，再运行速度环；`is_optimize` 选择最短路径或直接角度控制 |
+| `pid_device_reset_multi_turn(device)` | 将当前多圈编码器累计位置设为相对零点（0°） |
+| `pid_device_get_multi_turn_deg(device, angle_deg, use_output_shaft)` | 读取相对多圈零点的累计角度（可选转子角度或按型号减速比换算后的输出轴角度） |
+| `pid_device_control_multi_location(device, target_deg, feedforward, use_output_shaft)` | 多圈位置串级环，基于 `dj_motor` 累计刻度实现无上限多圈闭环 |
 
 `PID_DEVICE_POSITIONAL` 对应 `PIDInstance` / `PIDInit`；`PID_DEVICE_INCREMENTAL` 对应 `PIDInstance_jie` / `PID_Init_Params_jie`。传入的两个 PID 指针必须与所选算法匹配。公共层不分配或释放实例，也不重置 PID。一个 PID 实例只服务一台电机的一个环，所有对象的生命周期必须覆盖控制过程。
 
@@ -58,6 +61,39 @@ status = pid_device_control_location(gimbal_get_pid_device(0), 30.0f, 0.0f, true
 控制接口返回 `err_t`，反馈读取和命令写入错误直接返回；空设备为 `PTR_NULL`，未绑定或不支持的位置环为 `STATE_ERR`，非有限输入为 `ARG_ERR`。参数或反馈检查失败时不写新命令，已有命令不由本层清零。
 
 命令仍通过 `dj_motor_set_command()` 写入组缓存，组内成员本周期写齐才发送。三个发射电机在同一组，不能只写一个电机就期待自动发帧。停机继续调用 `dj_motor_zero_and_flush()`。
+
+## 多圈位置控制说明与示例
+
+### 函数说明
+
+| 函数 | 可见性 | 说明 |
+| --- | --- | --- |
+| `pid_device_reset_multi_turn(device)` | 公开 API（`pid_device.h`） | 读取当前 `dj_motor` 累计编码器刻度 `feedback.total_encoder`，将其记录为 `device->multi_turn_zero_ticks` 并置 `multi_turn_zero_valid = true`，作为后续多圈控制的 `0°` 起点。若电机尚未收到有效反馈则返回 `STATE_ERR` 并清空零点标志。 |
+| `pid_device_get_multi_turn_deg(device, angle_deg, use_output_shaft)` | 公开 API（`pid_device.h`） | 查询当前相对零点转过的多圈角度并写入 `*angle_deg`。`use_output_shaft = true` 时除以电机减速比返回**输出轴角度**（如 M2006 除以 `36.0f`）；`false` 时直接返回**转子角度**。 |
+| `pid_device_control_multi_location(device, target_deg, feedforward, use_output_shaft)` | 公开 API（`pid_device.h`） | 多圈位置串级闭环：`use_output_shaft = true` 时将目标 `target_deg` 乘减速比转为转子目标角，与当前相对转子角一同送入外环位置 PID 生成目标转子 RPM，再经速度内环和 `feedforward` 叠加限幅后写入电机命令缓存（外环参数单位仍保持“转子度 -> 转子 RPM”）。 |
+| `pid_device_relative_rotor_deg(device, feedback)` | 内部 `static` 辅助函数（`pid_device.c`） | 被 `pid_device_get_multi_turn_deg` 和 `pid_device_control_multi_location` 内部调用。若尚未建立零点则自动以当前 `feedback->total_encoder` 作为零点；随后用 `int64_t` 整数做差 `(feedback->total_encoder - device->multi_turn_zero_ticks)` 再乘 `360.0f / 8192.0f`，避免长时运行下的浮点累加漂移。 |
+
+### 简单示例（以 8 孔 M2006 拨弹盘单发旋转输出轴 45° 为例）
+
+```c
+/* 1. 进入单发动作前：将当前编码器位置清零为相对 0°，并按需复位外环 PID */
+if (pid_device_reset_multi_turn(&feeder_dev) == OK) {
+  PIDReset(&pid_location);
+}
+
+/* 2. 在 2ms 控制周期内调用多圈位置闭环（use_output_shaft = true 表示目标 45° 是输出轴角度） */
+err_t status = pid_device_control_multi_location(&feeder_dev, 45.0f, 0.0f, true);
+if (status == OK) {
+  /* 3. 读取当前输出轴已转角度，判断是否到达目标（误差 <= 0.5°） */
+  float current_output_deg = 0.0f;
+  if (pid_device_get_multi_turn_deg(&feeder_dev, &current_output_deg, true) == OK) {
+    float error_deg = 45.0f - current_output_deg;
+    if (error_deg >= -0.5f && error_deg <= 0.5f) {
+      /* 已到达输出轴 45°（对应转子 1620°），可切换速度环发 0.0f 保持停止 */
+    }
+  }
+}
+```
 
 ## 验证
 

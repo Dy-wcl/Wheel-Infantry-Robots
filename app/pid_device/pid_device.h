@@ -15,6 +15,8 @@ typedef struct {
   void* speed_pid;
   void* location_pid; /**< NULL 表示仅支持速度环 */
   float (*calculate)(void* pid, float target, float actual);
+  bool multi_turn_zero_valid;    /**< true 表示已设置多圈相对零点 */
+  int64_t multi_turn_zero_ticks; /**< 相对零点对应的逻辑累计编码器刻度 */
 } pid_device_t;
 
 /**
@@ -50,3 +52,34 @@ err_t pid_device_control_speed(pid_device_t* device, float target_rpm,
  */
 err_t pid_device_control_location(pid_device_t* device, float target_deg,
                                   float feedforward, bool is_optimize);
+
+/**
+ * @brief 将当前多圈累计位置设为相对零点（0°）。
+ * @param device 已初始化的设备对象。
+ * @return OK 成功；空指针返回 PTR_NULL；未绑定或尚无有效反馈返回 STATE_ERR。
+ */
+err_t pid_device_reset_multi_turn(pid_device_t* device);
+
+/**
+ * @brief 读取相对多圈零点的累计角度（单位：度）。
+ * @param device 已初始化的设备对象。
+ * @param angle_deg 输出相对角度，不可为 NULL。
+ * @param use_output_shaft true 返回输出轴角度（已除电机减速比）；false 返回转子角度。
+ * @return OK 成功；空指针 PTR_NULL；未绑定或无有效反馈 STATE_ERR。
+ * @note 若尚未设置零点且反馈有效，首次调用会自动把当前位置设为零点（返回 0°）。
+ */
+err_t pid_device_get_multi_turn_deg(pid_device_t* device, float* angle_deg,
+                                    bool use_output_shaft);
+
+/**
+ * @brief 多圈位置串级环：基于底层连续多圈编码器刻度做相对位置闭环。
+ * @param device 已初始化且绑定了位置环的设备对象。
+ * @param target_deg 相对多圈零点的目标角度（度）。
+ * @param feedforward 速度环输出叠加的电调原始前馈指令。
+ * @param use_output_shaft true 表示 target_deg 为输出轴角度（内部乘减速比后传入位置环，
+ *        保持位置环输入单位为转子度、输出单位为转子 RPM）；false 表示 target_deg 为转子角度。
+ * @return 同 pid_device_control_location。
+ */
+err_t pid_device_control_multi_location(pid_device_t* device, float target_deg,
+                                        float feedforward,
+                                        bool use_output_shaft);

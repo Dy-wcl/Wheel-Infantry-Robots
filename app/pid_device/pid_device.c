@@ -96,6 +96,8 @@ err_t pid_device_init(pid_device_t* device, dj_motor_t* motor,
   device->speed_pid = speed_pid;
   device->location_pid = location_pid;
   device->calculate = calculate;
+  device->multi_turn_zero_valid = false;
+  device->multi_turn_zero_ticks = 0;
   return OK;
 }
 
@@ -180,5 +182,98 @@ err_t pid_device_control_location(pid_device_t* device, float target_deg,
   if (!isfinite(target_rpm)) return ARG_ERR;
   const float output = device->calculate(device->speed_pid, target_rpm,
                                          (float)feedback.speed_rpm);
+  return pid_device_write_command(device, output, feedforward);
+}
+
+/** 计算相对多圈零点的转子累计角度（°）；首次遇到有效反馈时自动建立零点。 */
+static float pid_device_relative_rotor_deg(pid_device_t* device,
+                                           const dj_motor_feedback_t* feedback) {
+  if (!device->multi_turn_zero_valid) {
+    device->multi_turn_zero_ticks = feedback->total_encoder;
+    device->multi_turn_zero_valid = true;
+  }
+  return (float)(feedback->total_encoder - device->multi_turn_zero_ticks) *
+         (360.0f / (float)DJ_MOTOR_ENCODER_RESOLUTION);
+}
+
+err_t pid_device_reset_multi_turn(pid_device_t* device) {
+  dj_motor_feedback_t feedback;
+  const err_t result = pid_device_feedback(device, &feedback);
+  if (result != OK) {
+    return result;
+  }
+  if (!feedback.valid) {
+    device->multi_turn_zero_valid = false;
+    device->multi_turn_zero_ticks = 0;
+    return STATE_ERR;
+  }
+
+  device->multi_turn_zero_ticks = feedback.total_encoder;
+  device->multi_turn_zero_valid = true;
+  return OK;
+}
+
+err_t pid_device_get_multi_turn_deg(pid_device_t* device, float* angle_deg,
+                                    bool use_output_shaft) {
+  if (angle_deg == NULL) {
+    return PTR_NULL;
+  }
+
+  dj_motor_feedback_t feedback;
+  const err_t result = pid_device_feedback(device, &feedback);
+  if (result != OK) {
+    return result;
+  }
+  if (!feedback.valid) {
+    return STATE_ERR;
+  }
+
+  float rotor_deg = pid_device_relative_rotor_deg(device, &feedback);
+  if (use_output_shaft) {
+    const float reduction = dj_motor_drv_reduction_ratio(device->motor->type);
+    if (reduction > 0.0f) {
+      rotor_deg /= reduction;
+    }
+  }
+  *angle_deg = rotor_deg;
+  return OK;
+}
+
+err_t pid_device_control_multi_location(pid_device_t* device, float target_deg,
+                                        float feedforward,
+                                        bool use_output_shaft) {
+  if (!isfinite(target_deg) || !isfinite(feedforward)) {
+    return ARG_ERR;
+  }
+
+  dj_motor_feedback_t feedback;
+  const err_t result = pid_device_feedback(device, &feedback);
+  if (result != OK) {
+    return result;
+  }
+  if ((device->location_pid == NULL) || !feedback.valid) {
+    return STATE_ERR;
+  }
+
+  const float actual_rotor_deg = pid_device_relative_rotor_deg(device, &feedback);
+  float target_rotor_deg = target_deg;
+  if (use_output_shaft) {
+    const float reduction = dj_motor_drv_reduction_ratio(device->motor->type);
+    if (reduction > 0.0f) {
+      target_rotor_deg *= reduction;
+    }
+  }
+  if (!isfinite(target_rotor_deg)) {
+    return ARG_ERR;
+  }
+
+  const float target_rpm =
+      device->calculate(device->location_pid, target_rotor_deg, actual_rotor_deg);
+  if (!isfinite(target_rpm)) {
+    return ARG_ERR;
+  }
+
+  const float output =
+      device->calculate(device->speed_pid, target_rpm, (float)feedback.speed_rpm);
   return pid_device_write_command(device, output, feedforward);
 }
