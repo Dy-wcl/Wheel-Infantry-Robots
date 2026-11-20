@@ -8,6 +8,7 @@ static uint8_t dma_buffer_[IMU485_DMA_BUFFER_SIZE];
 static uint8_t imu_rx_buffer_[IMU485_FRAME_SIZE];
 static uint8_t frame_assembler_[IMU485_FRAME_SIZE];
 static size_t frame_index_ = 0u;
+static uint32_t imu_last_rx_error_count_ = 0u;
 static volatile bool frame_ready_ = false;
 static IMU485_t *instance_ = NULL;
 
@@ -82,6 +83,14 @@ static void IMU485_RxCallback(uint8_t *data, size_t size)
     return;
   }
 
+  if (instance_ != NULL) {
+    const uint32_t rx_err_count = STM32UART_GetRxErrorCount(&instance_->uart_);
+    if (rx_err_count != imu_last_rx_error_count_) {
+      imu_last_rx_error_count_ = rx_err_count;
+      frame_index_ = 0u;
+    }
+  }
+
   for (size_t i = 0u; i < size; ++i) {
     const uint8_t byte = data[i];
     if ((frame_index_ == 0u) && (byte != IMU485_HEADER)) {
@@ -134,6 +143,7 @@ err_t imu_485_init(IMU485_t *self, UART_HandleTypeDef *uart_handle)
 
   memset(self, 0, sizeof(*self));
   frame_index_ = 0u;
+  imu_last_rx_error_count_ = 0u;
   frame_ready_ = false;
   self->init_error_ = STM32UART_Init(
       &self->uart_, uart_handle,
@@ -160,20 +170,36 @@ void imu_485_update(IMU485_t *self, uint32_t timeout_ms)
   }
 
   uint32_t notify_value = 0u;
-  const BaseType_t result = xTaskNotifyWait(
-      SIGNAL_IMU485_RAW_READY, UINT32_MAX, &notify_value,
-      pdMS_TO_TICKS(timeout_ms));
-  if ((result == pdTRUE) && frame_ready_) {
-    frame_ready_ = false;
+  (void)xTaskNotifyWait(0u, SIGNAL_IMU485_RAW_READY, &notify_value,
+                        pdMS_TO_TICKS(timeout_ms));
+
+  taskENTER_CRITICAL();
+  const bool ready = frame_ready_;
+  if (ready) {
     memcpy(self->raw_frame, imu_rx_buffer_, IMU485_FRAME_SIZE);
+    frame_ready_ = false;
+  }
+  taskEXIT_CRITICAL();
+
+  bool decoded_ok = false;
+  if (ready) {
     dm_imu_t_t decoded;
     if (IMU485_DecodeFrame(self->raw_frame, &decoded)) {
       self->data = decoded;
       imu_485 = decoded;
       self->online_ = true;
-      return;
+      decoded_ok = true;
     }
   }
+  if (!decoded_ok) {
+    self->online_ = false;
+  }
 
-  self->online_ = false;
+  if (STM32UART_GetLastError(&self->uart_) != OK) {
+    taskENTER_CRITICAL();
+    frame_index_ = 0u;
+    imu_last_rx_error_count_ = STM32UART_GetRxErrorCount(&self->uart_);
+    taskEXIT_CRITICAL();
+    (void)STM32UART_RestartRxDMA(&self->uart_);
+  }
 }
